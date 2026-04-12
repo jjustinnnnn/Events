@@ -100,7 +100,7 @@ function updateArtistMessage() {
   const latest = matches[0];
   const count = matches.length;
   const countText = count === 1 ? 'once' : `${count} times`;
-  els.artistMessage.textContent = `You've seen ${latest.Artist} ${countText}, last time was ${displayDate(latest.Date)}, at ${latest.Venue}.`;
+  els.artistMessage.textContent = `You've seen ${latest.Artist} ${countText}! The last time was on ${displayDate(latest.Date)} at ${latest.Venue}.`;
 }
 
 function buildFeatures() {
@@ -124,7 +124,7 @@ function buildFeatures() {
     </div>
   `;
 
-  els.dayFeature.innerHTML = dayMatches.length ? dayMatches.map(featureCard).join('') : 'No historical matches for today yet.';
+  els.dayFeature.innerHTML = dayMatches.length ? dayMatches.map(featureCard).join('') : 'No historical matches for today yet. Go to more concerts!';
   els.weekFeature.innerHTML = weekMatches.length ? weekMatches.map(featureCard).join('') : 'No historical matches for this week yet.';
 }
 
