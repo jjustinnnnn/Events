@@ -11,7 +11,8 @@ const els = {
   resultsCount: document.getElementById('resultsCount'),
   resultsHeading: document.getElementById('resultsHeading'),
   dayFeature: document.getElementById('dayFeature'),
-  weekFeature: document.getElementById('weekFeature')
+  weekFeature: document.getElementById('weekFeature'),
+  artistMessage: document.getElementById('artistMessage')
 };
 
 let rows = [];
@@ -89,6 +90,26 @@ function render() {
   els.resultsHeading.textContent = active.length ? 'Filtered events' : 'All events';
 }
 
+function updateArtistMessage() {
+  const query = lower(els.search.value);
+  if (!query) {
+    els.artistMessage.textContent = '';
+    return;
+  }
+
+  const matches = rows.filter(r => lower(r.Artist).includes(query));
+  if (!matches.length) {
+    els.artistMessage.textContent = "Hmm...don't think you've seen them yet! Bummer...";
+    return;
+  }
+
+  matches.sort((a, b) => new Date(b.Date) - new Date(a.Date));
+  const latest = matches[0];
+  const count = matches.length;
+  const countText = count === 1 ? 'once' : `${count} times`;
+  els.artistMessage.textContent = `You've seen ${latest.Artist} ${countText}, last time was ${displayDate(latest.Date)}, at ${latest.Venue}.`;
+}
+
 function buildFeatures() {
   const now = new Date();
   const todayMonth = now.getMonth() + 1;
@@ -121,7 +142,10 @@ function initFilters() {
 }
 
 function attachEvents() {
-  [els.search, els.type, els.festival, els.year, els.photo].forEach(el => el.addEventListener('input', render));
+  [els.search, els.type, els.festival, els.year, els.photo].forEach(el => el.addEventListener('input', () => {
+    render();
+    updateArtistMessage();
+  }));
   els.clear.addEventListener('click', () => {
     els.search.value = '';
     els.type.value = 'all';
@@ -129,6 +153,7 @@ function attachEvents() {
     els.year.value = 'all';
     els.photo.value = 'all';
     render();
+    updateArtistMessage();
   });
 }
 
@@ -142,6 +167,7 @@ async function main() {
   buildFeatures();
   attachEvents();
   render();
+  updateArtistMessage();
 }
 
 main().catch(err => {
