@@ -3,9 +3,7 @@ const els = {
   search: document.getElementById('searchInput'),
   clear: document.getElementById('clearBtn'),
   type: document.getElementById('typeFilter'),
-  festival: document.getElementById('festivalFilter'),
   year: document.getElementById('yearFilter'),
-  photo: document.getElementById('photoFilter'),
   total: document.getElementById('totalCount'),
   results: document.getElementById('results'),
   resultsCount: document.getElementById('resultsCount'),
@@ -49,16 +47,11 @@ function escapeHtml(str) {
 function getFiltered() {
   const q = lower(els.search.value);
   const type = norm(els.type.value);
-  const festival = norm(els.festival.value);
   const year = norm(els.year.value);
-  const photo = norm(els.photo.value);
 
   return rows.filter(r => {
     if (type !== 'all' && norm(r.Type) !== type) return false;
-    if (festival !== 'all' && norm(r.Festival) !== festival) return false;
     if (year !== 'all' && yearOf(r) !== year) return false;
-    if (photo === 'with' && norm(r['Photo URL']) === '') return false;
-    if (photo === 'without' && norm(r['Photo URL']) !== '') return false;
     if (!q) return true;
     const blob = [r.Date, r.Artist, r.Venue, r.Note, r.Setlist, r.Festival, r.Type].map(lower).join(' | ');
     return blob.includes(q);
@@ -86,7 +79,7 @@ function render() {
   const filtered = getFiltered();
   els.results.innerHTML = filtered.length ? filtered.map(cardHtml).join('') : '<div class="empty">No events matched your search.</div>';
   els.resultsCount.textContent = `${filtered.length} found`;
-  const active = [els.type.value !== 'all' ? els.type.value : '', els.festival.value !== 'all' ? els.festival.value : '', els.year.value !== 'all' ? els.year.value : '', els.photo.value !== 'all' ? els.photo.value : ''].filter(Boolean);
+  const active = [els.type.value !== 'all' ? els.type.value : '', els.year.value !== 'all' ? els.year.value : ''].filter(Boolean);
   els.resultsHeading.textContent = active.length ? 'Filtered events' : 'All events';
 }
 
@@ -107,7 +100,7 @@ function updateArtistMessage() {
   const latest = matches[0];
   const count = matches.length;
   const countText = count === 1 ? 'once' : `${count} times`;
-  els.artistMessage.textContent = `You've seen ${latest.Artist} ${countText}. The last time was on ${displayDate(latest.Date)} at ${latest.Venue}.`;
+  els.artistMessage.textContent = `You've seen ${latest.Artist} ${countText}, last time was ${displayDate(latest.Date)}, at ${latest.Venue}.`;
 }
 
 function buildFeatures() {
@@ -137,21 +130,18 @@ function buildFeatures() {
 
 function initFilters() {
   fillSelect(els.type, uniqueSorted(rows.map(r => norm(r.Type))), 'Types');
-  fillSelect(els.festival, uniqueSorted(rows.map(r => norm(r.Festival))), 'Festivals');
   fillSelect(els.year, uniqueSorted(rows.map(yearOf)), 'Years');
 }
 
 function attachEvents() {
-  [els.search, els.type, els.festival, els.year, els.photo].forEach(el => el.addEventListener('input', () => {
+  [els.search, els.type, els.year].forEach(el => el.addEventListener('input', () => {
     render();
     updateArtistMessage();
   }));
   els.clear.addEventListener('click', () => {
     els.search.value = '';
     els.type.value = 'all';
-    els.festival.value = 'all';
     els.year.value = 'all';
-    els.photo.value = 'all';
     render();
     updateArtistMessage();
   });
