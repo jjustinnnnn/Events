@@ -107,7 +107,7 @@ function updateArtistMessage() {
   const latest = matches[0];
   const count = matches.length;
   const countText = count === 1 ? 'once' : `${count} times`;
-  els.artistMessage.textContent = `You've seen ${latest.Artist} ${countText}, last time was ${displayDate(latest.Date)}, at ${latest.Venue}.`;
+  els.artistMessage.textContent = `You've seen ${latest.Artist} ${countText}. The last time was on ${displayDate(latest.Date)} at ${latest.Venue}.`;
 }
 
 function buildFeatures() {
