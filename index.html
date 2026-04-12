@@ -13,9 +13,11 @@
     <header class="hero">
       <div>
         <h1>Concert Archive</h1>
+        <p class="subtitle">Search concerts, sports, Broadway, and festivals from one historical log.</p>
       </div>
       <div class="hero-card">
         <div class="hero-stat" id="totalCount">0 events</div>
+        <div class="hero-label">since 2004</div>
       </div>
     </header>
 
@@ -24,6 +26,7 @@
         <input id="searchInput" type="search" placeholder="Search artist, venue, festival, note, or year..." />
         <button id="clearBtn" type="button">Clear</button>
       </div>
+      <div id="artistMessage" class="artist-message" aria-live="polite"></div>
 
       <div class="filter-grid compact-filters">
         <label>
