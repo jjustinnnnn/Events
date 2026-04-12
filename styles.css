@@ -121,3 +121,32 @@ select { width: 100%; padding: 13px 14px; }
   .search-row { flex-direction: column; }
   button { height: 48px; }
 }
+
+@media (max-width: 640px) {
+  .page-shell { padding: 18px 12px 28px; }
+  .panel { padding: 16px; border-radius: 18px; }
+  .hero { gap: 12px; margin-bottom: 14px; }
+  h1 { font-size: 34px; }
+  .subtitle { font-size: 14px; margin-top: 8px; }
+  .hero-card { padding: 14px 16px; min-width: 0; }
+  .hero-stat { font-size: 22px; }
+  .hero-label { font-size: 12px; }
+  .search-row { gap: 8px; }
+  input[type="search"] { padding: 14px 14px; font-size: 16px; }
+  button { width: 100%; }
+  .artist-message { font-size: 13px; min-height: 20px; }
+  .filter-grid { gap: 10px; margin-top: 12px; }
+  label span { font-size: 11px; margin-bottom: 6px; }
+  select { padding: 12px 12px; font-size: 14px; }
+  .highlights { gap: 12px; margin-top: 14px; }
+  .highlights h2, .results-bar h2 { font-size: 16px; }
+  .feature-list { min-height: 72px; padding: 12px; border-radius: 14px; }
+  .results-panel { margin-top: 14px; }
+  .results-bar { margin-bottom: 12px; }
+  .results-count { font-size: 13px; }
+  .card { padding: 14px 14px; border-radius: 16px; }
+  .card h3 { font-size: 18px; }
+  .card p { font-size: 14px; }
+  .card-date { font-size: 12px; }
+  .meta-line { margin-top: 10px; font-size: 12px; gap: 8px; }
+}
