@@ -27,13 +27,6 @@ body {
   align-items: end;
   margin-bottom: 22px;
 }
-.eyebrow {
-  margin: 0 0 8px;
-  font-size: 12px;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
 h1 { margin: 0; font-size: clamp(40px, 6vw, 64px); line-height: .95; }
 .subtitle { margin: 12px 0 0; color: var(--muted); max-width: 58ch; font-size: 16px; }
 .hero-card, .panel {
@@ -66,6 +59,14 @@ input[type="search"] {
 }
 button { padding: 0 18px; cursor: pointer; background: var(--accent); color: #fff; border-color: transparent; }
 button:hover { filter: brightness(.97); }
+.artist-message {
+  margin-top: 12px;
+  min-height: 24px;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
 .filter-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
