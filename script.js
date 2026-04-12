@@ -162,7 +162,7 @@ async function main() {
   const text = await response.text();
   rows = Papa.parse(text, { header: true, skipEmptyLines: true }).data;
   rows = rows.filter(r => norm(r.Date) && norm(r.Artist));
-  els.total.textContent = `${rows.length.toLocaleString()} events since 2004`;
+  els.total.textContent = `${rows.length.toLocaleString()} concerts since 2004`;
   initFilters();
   buildFeatures();
   attachEvents();
