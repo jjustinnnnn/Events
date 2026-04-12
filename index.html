@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.4">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!doctype html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta charset="utf-8" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;title&gt;Concert Archive&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;link rel="stylesheet" href="styles.css" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;script defer src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;script defer src="script.js"&gt;&lt;/script&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="page-shell"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;header class="hero"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;p class="eyebrow"&gt;Personal live event database&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;h1&gt;Concert Archive&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;p class="subtitle"&gt;Search concerts, sports, Broadway, and festivals from one historical log.&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="hero-card"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="hero-stat" id="totalCount"&gt;0 events&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="hero-label"&gt;in the archive&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/header&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;section class="panel"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="search-row"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;input id="searchInput" type="search" placeholder="Search artist, venue, festival, note, or year..." /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;button id="clearBtn" type="button"&gt;Clear&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="filter-grid compact-filters"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span&gt;Type&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;select id="typeFilter"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;option value="all"&gt;All Types&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span&gt;Festival&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;select id="festivalFilter"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;option value="all"&gt;All Festivals&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span&gt;Year&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;select id="yearFilter"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;option value="all"&gt;All Years&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;span&gt;Photo&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;select id="photoFilter"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;option value="all"&gt;All Events&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;option value="with"&gt;With Photos&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;option value="without"&gt;Without Photos&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="highlights"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;h2&gt;On this day&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div id="dayFeature" class="feature-list"&gt;Loading…&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;h2&gt;This week&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div id="weekFeature" class="feature-list"&gt;Loading…&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/section&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;main class="panel results-panel"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="results-bar"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;h2 id="resultsHeading"&gt;All events&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div id="resultsCount" class="results-count"&gt;0 found&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div id="results" class="results"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/main&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
