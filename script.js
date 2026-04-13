@@ -10,6 +10,7 @@ const els = {
   resultsHeading: document.getElementById('resultsHeading'),
   dayFeature: document.getElementById('dayFeature'),
   weekFeature: document.getElementById('weekFeature'),
+  upcomingFeature: document.getElementById('upcomingFeature'),
   artistMessage: document.getElementById('artistMessage')
 };
 
@@ -17,13 +18,31 @@ let rows = [];
 
 const norm = v => (v ?? '').toString().trim();
 const lower = v => norm(v).toLowerCase();
+
+function parseFlexibleDate(v) {
+  const s = norm(v);
+  if (!s) return null;
+  const digits = s.replace(/\D/g, '');
+  if (digits.length === 8) {
+    const mm = digits.slice(0, 2), dd = digits.slice(2, 4), yyyy = digits.slice(4);
+    let d = new Date(`${yyyy}-${mm}-${dd}T00:00:00`);
+    if (!Number.isNaN(d.getTime())) return d;
+    d = new Date(`${yyyy}-${dd}-${mm}T00:00:00`);
+    if (!Number.isNaN(d.getTime())) return d;
+  }
+  const d = new Date(s);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
 const yearOf = r => {
-  const d = new Date(norm(r.Date));
-  return Number.isNaN(d.getTime()) ? '' : String(d.getFullYear());
+  const d = parseFlexibleDate(r.Date);
+  return d ? String(d.getFullYear()) : '';
 };
+
 const displayDate = v => {
-  const d = new Date(v);
-  if (Number.isNaN(d.getTime())) return norm(v);
+  const d = parseFlexibleDate(v);
+  if (Number.isNaN(d?.getTime?.())) return norm(v);
+  if (!d) return norm(v);
   return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 };
 
@@ -96,36 +115,45 @@ function updateArtistMessage() {
     return;
   }
 
-  matches.sort((a, b) => new Date(b.Date) - new Date(a.Date));
+  matches.sort((a, b) => (parseFlexibleDate(b.Date)?.getTime() || 0) - (parseFlexibleDate(a.Date)?.getTime() || 0));
   const latest = matches[0];
   const count = matches.length;
   const countText = count === 1 ? 'once' : `${count} times`;
   els.artistMessage.textContent = `You've seen ${latest.Artist} ${countText}! The last time was on ${displayDate(latest.Date)} at ${latest.Venue}.`;
 }
 
-function buildFeatures() {
-  const now = new Date();
-  const todayMonth = now.getMonth() + 1;
-  const todayDay = now.getDate();
-  const todayWeek = Math.ceil((((now - new Date(now.getFullYear(), 0, 1)) / 86400000) + new Date(now.getFullYear(), 0, 1).getDay() + 1) / 7);
-
-  const dayMatches = rows.filter(r => {
-    const d = new Date(norm(r.Date));
-    return !Number.isNaN(d.getTime()) && (d.getMonth() + 1) === todayMonth && d.getDate() === todayDay;
-  }).slice(0, 3);
-
-  const weekMatches = rows.filter(r => String(r['Week Number']) === String(todayWeek)).slice(0, 3);
-
-  const featureCard = r => `
+function featureCard(r) {
+  return `
     <div class="small" style="padding:8px 0;border-bottom:1px solid rgba(220,226,238,0.7)">
       <strong>${escapeHtml(r.Artist)}</strong><br>
       ${escapeHtml(displayDate(r.Date))} · ${escapeHtml(r.Venue)}
       ${norm(r.Festival) ? `<br><span class="badge" style="margin-top:6px">${escapeHtml(r.Festival)}</span>` : ''}
     </div>
   `;
+}
+
+function buildFeatures() {
+  const now = new Date();
+  const todayMonth = now.getMonth();
+  const todayDay = now.getDate();
+  const todayWeek = Math.ceil((((now - new Date(now.getFullYear(), 0, 1)) / 86400000) + new Date(now.getFullYear(), 0, 1).getDay() + 1) / 7);
+
+  const dayMatches = rows.filter(r => {
+    const d = parseFlexibleDate(r.Date);
+    return d && d.getMonth() === todayMonth && d.getDate() === todayDay;
+  }).slice(0, 3);
+
+  const weekMatches = rows.filter(r => String(r['Week Number']) === String(todayWeek)).slice(0, 3);
+
+  const upcomingMatches = rows
+    .map(r => ({ ...r, _date: parseFlexibleDate(r.Date) }))
+    .filter(r => r._date && r._date > now)
+    .sort((a, b) => a._date - b._date)
+    .slice(0, 3);
 
   els.dayFeature.innerHTML = dayMatches.length ? dayMatches.map(featureCard).join('') : 'No historical matches for today yet. Go to more concerts!';
   els.weekFeature.innerHTML = weekMatches.length ? weekMatches.map(featureCard).join('') : 'No historical matches for this week yet.';
+  els.upcomingFeature.innerHTML = upcomingMatches.length ? upcomingMatches.map(featureCard).join('') : 'No upcoming events found.';
 }
 
 function initFilters() {
