@@ -157,3 +157,25 @@ select { width: 100%; padding: 13px 14px; }
   .card-date { font-size: 12px; }
   .meta-line { margin-top: 10px; font-size: 12px; gap: 8px; }
 }
+
+.results-panel,
+.results,
+.card,
+.card-main {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.card {
+  overflow: hidden;
+}
+
+.card p,
+.card h3,
+.card-date,
+.meta-line {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
