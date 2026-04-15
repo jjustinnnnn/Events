@@ -34,6 +34,17 @@ function parseFlexibleDate(v) {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
+function startOfToday() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function isPastOrToday(v) {
+  const d = parseFlexibleDate(v);
+  if (!d) return false;
+  return d.getTime() <= startOfToday().getTime();
+}
+
 const yearOf = r => {
   const d = parseFlexibleDate(r.Date);
   return d ? String(d.getFullYear()) : '';
@@ -69,6 +80,7 @@ function getFiltered() {
   const year = norm(els.year.value);
 
   return rows.filter(r => {
+    if (!isPastOrToday(r.Date)) return false;
     if (type !== 'all' && norm(r.Type) !== type) return false;
     if (year !== 'all' && yearOf(r) !== year) return false;
     if (!q) return true;
@@ -109,7 +121,7 @@ function updateArtistMessage() {
     return;
   }
 
-  const matches = rows.filter(r => lower(r.Artist).includes(query));
+  const matches = rows.filter(r => isPastOrToday(r.Date) && lower(r.Artist).includes(query));
   if (!matches.length) {
     els.artistMessage.textContent = "Hmm...don't think you've seen them yet! Bummer...";
     return;
@@ -134,20 +146,29 @@ function featureCard(r) {
 
 function buildFeatures() {
   const now = new Date();
+  const today = startOfToday();
   const todayMonth = now.getMonth();
   const todayDay = now.getDate();
   const todayWeek = Math.ceil((((now - new Date(now.getFullYear(), 0, 1)) / 86400000) + new Date(now.getFullYear(), 0, 1).getDay() + 1) / 7);
 
   const dayMatches = rows.filter(r => {
     const d = parseFlexibleDate(r.Date);
-    return d && d.getMonth() === todayMonth && d.getDate() === todayDay;
+    return d &&
+      d.getTime() <= today.getTime() &&
+      d.getMonth() === todayMonth &&
+      d.getDate() === todayDay;
   }).slice(0, 3);
 
-  const weekMatches = rows.filter(r => String(r['Week Number']) === String(todayWeek)).slice(0, 3);
+  const weekMatches = rows.filter(r => {
+    const d = parseFlexibleDate(r.Date);
+    return d &&
+      d.getTime() <= today.getTime() &&
+      String(r['Week Number']) === String(todayWeek);
+  }).slice(0, 3);
 
   const upcomingMatches = rows
     .map(r => ({ ...r, _date: parseFlexibleDate(r.Date) }))
-    .filter(r => r._date && r._date > now)
+    .filter(r => r._date && r._date > today)
     .sort((a, b) => a._date - b._date)
     .slice(0, 3);
 
