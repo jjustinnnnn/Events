@@ -22,14 +22,20 @@ const lower = v => norm(v).toLowerCase();
 function parseFlexibleDate(v) {
   const s = norm(v);
   if (!s) return null;
+
   const digits = s.replace(/\D/g, '');
   if (digits.length === 8) {
-    const mm = digits.slice(0, 2), dd = digits.slice(2, 4), yyyy = digits.slice(4);
+    const mm = digits.slice(0, 2);
+    const dd = digits.slice(2, 4);
+    const yyyy = digits.slice(4);
+
     let d = new Date(`${yyyy}-${mm}-${dd}T00:00:00`);
     if (!Number.isNaN(d.getTime())) return d;
+
     d = new Date(`${yyyy}-${dd}-${mm}T00:00:00`);
     if (!Number.isNaN(d.getTime())) return d;
   }
+
   const d = new Date(s);
   return Number.isNaN(d.getTime()) ? null : d;
 }
@@ -39,10 +45,20 @@ function startOfToday() {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
+function startOfDay(d) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
 function isPastOrToday(v) {
   const d = parseFlexibleDate(v);
   if (!d) return false;
-  return d.getTime() <= startOfToday().getTime();
+  return startOfDay(d).getTime() <= startOfToday().getTime();
+}
+
+function getWeekOfYear(date) {
+  const d = startOfDay(date);
+  const yearStart = new Date(d.getFullYear(), 0, 1);
+  return Math.ceil((((d - yearStart) / 86400000) + yearStart.getDay() + 1) / 7);
 }
 
 const yearOf = r => {
@@ -54,15 +70,24 @@ const displayDate = v => {
   const d = parseFlexibleDate(v);
   if (Number.isNaN(d?.getTime?.())) return norm(v);
   if (!d) return norm(v);
-  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  return d.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
 };
 
 function uniqueSorted(values) {
-  return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  return [...new Set(values.filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b, undefined, { numeric: true })
+  );
 }
 
 function fillSelect(select, values, label) {
-  select.innerHTML = `<option value="all">All ${label}</option>` + values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+  select.innerHTML =
+    `<option value="all">All ${label}</option>` +
+    values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
 }
 
 function escapeHtml(str) {
@@ -84,13 +109,25 @@ function getFiltered() {
     if (type !== 'all' && norm(r.Type) !== type) return false;
     if (year !== 'all' && yearOf(r) !== year) return false;
     if (!q) return true;
-    const blob = [r.Date, r.Artist, r.Venue, r.Note, r.Setlist, r.Festival, r.Type].map(lower).join(' | ');
+
+    const blob = [
+      r.Date,
+      r.Artist,
+      r.Venue,
+      r.Note,
+      r.Setlist,
+      r.Festival,
+      r.Type
+    ].map(lower).join(' | ');
+
     return blob.includes(q);
   });
 }
 
 function cardHtml(r) {
-  const setlist = norm(r.Setlist) ? `<a href="${escapeHtml(r.Setlist)}" target="_blank" rel="noreferrer">Setlist.fm</a>` : '';
+  const setlist = norm(r.Setlist)
+    ? `<a href="${escapeHtml(r.Setlist)}" target="_blank" rel="noreferrer">Setlist.fm</a>`
+    : '';
   const note = norm(r.Note) ? `<p>${escapeHtml(r.Note)}</p>` : '';
 
   return `
@@ -108,30 +145,50 @@ function cardHtml(r) {
 
 function render() {
   const filtered = getFiltered();
-  els.results.innerHTML = filtered.length ? filtered.map(cardHtml).join('') : '<div class="empty">No events matched your search.</div>';
+
+  els.results.innerHTML = filtered.length
+    ? filtered.map(cardHtml).join('')
+    : '<div class="empty">No events matched your search.</div>';
+
   els.resultsCount.textContent = `${filtered.length} found`;
-  const active = [els.type.value !== 'all' ? els.type.value : '', els.year.value !== 'all' ? els.year.value : ''].filter(Boolean);
+
+  const active = [
+    els.type.value !== 'all' ? els.type.value : '',
+    els.year.value !== 'all' ? els.year.value : ''
+  ].filter(Boolean);
+
   els.resultsHeading.textContent = active.length ? 'Filtered events' : 'All events';
 }
 
 function updateArtistMessage() {
   const query = lower(els.search.value);
+
   if (!query) {
     els.artistMessage.textContent = '';
     return;
   }
 
-  const matches = rows.filter(r => isPastOrToday(r.Date) && lower(r.Artist).includes(query));
+  const matches = rows.filter(
+    r => isPastOrToday(r.Date) && lower(r.Artist).includes(query)
+  );
+
   if (!matches.length) {
     els.artistMessage.textContent = "Hmm...don't think you've seen them yet! Bummer...";
     return;
   }
 
-  matches.sort((a, b) => (parseFlexibleDate(b.Date)?.getTime() || 0) - (parseFlexibleDate(a.Date)?.getTime() || 0));
+  matches.sort(
+    (a, b) =>
+      (parseFlexibleDate(b.Date)?.getTime() || 0) -
+      (parseFlexibleDate(a.Date)?.getTime() || 0)
+  );
+
   const latest = matches[0];
   const count = matches.length;
   const countText = count === 1 ? 'once' : `${count} times`;
-  els.artistMessage.textContent = `You've seen ${latest.Artist} ${countText}! The last time was on ${displayDate(latest.Date)} at ${latest.Venue}.`;
+
+  els.artistMessage.textContent =
+    `You've seen ${latest.Artist} ${countText}! The last time was on ${displayDate(latest.Date)} at ${latest.Venue}.`;
 }
 
 function featureCard(r) {
@@ -149,32 +206,56 @@ function buildFeatures() {
   const today = startOfToday();
   const todayMonth = now.getMonth();
   const todayDay = now.getDate();
-  const todayWeek = Math.ceil((((now - new Date(now.getFullYear(), 0, 1)) / 86400000) + new Date(now.getFullYear(), 0, 1).getDay() + 1) / 7);
+  const todayWeek = getWeekOfYear(now);
 
-  const dayMatches = rows.filter(r => {
-    const d = parseFlexibleDate(r.Date);
-    return d &&
-      d.getTime() <= today.getTime() &&
-      d.getMonth() === todayMonth &&
-      d.getDate() === todayDay;
-  }).slice(0, 3);
+  const dayMatches = rows
+    .filter(r => {
+      const d = parseFlexibleDate(r.Date);
+      return (
+        d &&
+        startOfDay(d).getTime() <= today.getTime() &&
+        d.getMonth() === todayMonth &&
+        d.getDate() === todayDay
+      );
+    })
+    .sort(
+      (a, b) =>
+        (parseFlexibleDate(b.Date)?.getTime() || 0) -
+        (parseFlexibleDate(a.Date)?.getTime() || 0)
+    );
 
-  const weekMatches = rows.filter(r => {
-    const d = parseFlexibleDate(r.Date);
-    return d &&
-      d.getTime() <= today.getTime() &&
-      String(r['Week Number']) === String(todayWeek);
-  }).slice(0, 3);
+  const weekMatches = rows
+    .filter(r => {
+      const d = parseFlexibleDate(r.Date);
+      return (
+        d &&
+        startOfDay(d).getTime() <= today.getTime() &&
+        getWeekOfYear(d) === todayWeek
+      );
+    })
+    .sort(
+      (a, b) =>
+        (parseFlexibleDate(b.Date)?.getTime() || 0) -
+        (parseFlexibleDate(a.Date)?.getTime() || 0)
+    );
 
   const upcomingMatches = rows
     .map(r => ({ ...r, _date: parseFlexibleDate(r.Date) }))
-    .filter(r => r._date && r._date > today)
+    .filter(r => r._date && startOfDay(r._date).getTime() > today.getTime())
     .sort((a, b) => a._date - b._date)
     .slice(0, 3);
 
-  els.dayFeature.innerHTML = dayMatches.length ? dayMatches.map(featureCard).join('') : 'No historical matches for today yet. Go to more concerts!';
-  els.weekFeature.innerHTML = weekMatches.length ? weekMatches.map(featureCard).join('') : 'No historical matches for this week yet.';
-  els.upcomingFeature.innerHTML = upcomingMatches.length ? upcomingMatches.map(featureCard).join('') : 'No upcoming events found.';
+  els.dayFeature.innerHTML = dayMatches.length
+    ? dayMatches.map(featureCard).join('')
+    : 'No historical matches for today yet. Go to more concerts!';
+
+  els.weekFeature.innerHTML = weekMatches.length
+    ? weekMatches.map(featureCard).join('')
+    : 'No historical matches for this week yet.';
+
+  els.upcomingFeature.innerHTML = upcomingMatches.length
+    ? upcomingMatches.map(featureCard).join('')
+    : 'No upcoming events found.';
 }
 
 function initFilters() {
@@ -183,10 +264,13 @@ function initFilters() {
 }
 
 function attachEvents() {
-  [els.search, els.type, els.year].forEach(el => el.addEventListener('input', () => {
-    render();
-    updateArtistMessage();
-  }));
+  [els.search, els.type, els.year].forEach(el =>
+    el.addEventListener('input', () => {
+      render();
+      updateArtistMessage();
+    })
+  );
+
   els.clear.addEventListener('click', () => {
     els.search.value = '';
     els.type.value = 'all';
@@ -199,9 +283,13 @@ function attachEvents() {
 async function main() {
   const response = await fetch(CSV_PATH);
   const text = await response.text();
+
   rows = Papa.parse(text, { header: true, skipEmptyLines: true }).data;
   rows = rows.filter(r => norm(r.Date) && norm(r.Artist));
-  els.total.textContent = `${rows.length.toLocaleString()} concerts since 2004`;
+
+  const pastOrTodayCount = rows.filter(r => isPastOrToday(r.Date)).length;
+  els.total.textContent = `${pastOrTodayCount.toLocaleString()} concerts since 2004`;
+
   initFilters();
   buildFeatures();
   attachEvents();
