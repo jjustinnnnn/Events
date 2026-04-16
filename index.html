@@ -41,20 +41,30 @@
         </label>
       </div>
 
-      <div class="highlights">
-        <div>
-          <h2>On this day you saw...</h2>
-          <div id="dayFeature" class="feature-list">Loading…</div>
+      <div class="highlights-carousel">
+        <button class="carousel-btn prev-btn" id="carouselPrev" type="button" aria-label="Previous feature">‹</button>
+
+        <div class="carousel-viewport" id="carouselViewport">
+          <div class="carousel-track" id="carouselTrack">
+            <div class="carousel-slide">
+              <h2>On this day you saw...</h2>
+              <div id="dayFeature" class="feature-list">Loading…</div>
+            </div>
+            <div class="carousel-slide">
+              <h2>On this week you saw...</h2>
+              <div id="weekFeature" class="feature-list">Loading…</div>
+            </div>
+            <div class="carousel-slide">
+              <h2>Upcoming Events</h2>
+              <div id="upcomingFeature" class="feature-list">Loading…</div>
+            </div>
+          </div>
         </div>
-        <div>
-          <h2>On this week you saw...</h2>
-          <div id="weekFeature" class="feature-list">Loading…</div>
-        </div>
-        <div>
-          <h2>Upcoming Events</h2>
-          <div id="upcomingFeature" class="feature-list">Loading…</div>
-        </div>
+
+        <button class="carousel-btn next-btn" id="carouselNext" type="button" aria-label="Next feature">›</button>
       </div>
+
+      <div class="carousel-dots" id="carouselDots" aria-label="Feature carousel pagination"></div>
     </section>
 
     <main class="panel results-panel">
