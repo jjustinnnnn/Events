@@ -51,7 +51,6 @@ h1 { margin: 0; font-size: clamp(40px, 6vw, 64px); line-height: .95; }
 }
 
 .hero-stat { font-size: 28px; font-weight: 800; color: var(--accent); }
-
 .hero-label { color: var(--muted); font-size: 13px; margin-top: 4px; }
 
 .panel { border-radius: var(--radius); padding: 22px; margin-top: 18px; }
@@ -73,7 +72,6 @@ input[type="search"] {
 }
 
 button { padding: 0 18px; cursor: pointer; background: var(--accent); color: #fff; border-color: transparent; }
-
 button:hover { filter: brightness(.97); }
 
 .artist-message {
@@ -133,11 +131,19 @@ select { width: 100%; padding: 13px 14px; }
 
 .feature-list {
   min-height: 88px;
+  max-height: 280px;
+  overflow-y: auto;
   padding: 14px;
+  padding-right: 8px;
+  scrollbar-gutter: stable;
   border: 1px dashed var(--line);
   border-radius: 18px;
   background: rgba(255,255,255,0.65);
   color: var(--muted);
+}
+
+.feature-list .small:last-child {
+  border-bottom: none !important;
 }
 
 .carousel-btn {
@@ -205,7 +211,6 @@ select { width: 100%; padding: 13px 14px; }
 .meta-line { display:flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; color: var(--muted); font-size: 13px; }
 
 .meta-line a { color: var(--accent); text-decoration: none; font-weight: 600; }
-
 .meta-line a:hover { text-decoration: underline; }
 
 .small { font-size: 13px; }
@@ -268,7 +273,7 @@ select { width: 100%; padding: 13px 14px; }
   .compact-filters { overflow: hidden; }
   .highlights-carousel { margin-top: 14px; }
   .carousel-slide h2, .results-bar h2 { font-size: 16px; }
-  .feature-list { min-height: 72px; padding: 12px; border-radius: 14px; }
+  .feature-list { min-height: 72px; max-height: 220px; padding: 12px; border-radius: 14px; }
   .results-panel { margin-top: 14px; }
   .results-bar { flex-direction: column; align-items: flex-start; margin-bottom: 12px; }
   .results-count { font-size: 13px; }
