@@ -28,6 +28,7 @@ function buildFeatures() {
       const d = parseFlexibleDate(r.Date);
       return (
         d &&
+        d.getFullYear() !== currentYear &&
         startOfDay(d).getTime() <= today.getTime() &&
         getWeekOfYear(d) === todayWeek
       );
