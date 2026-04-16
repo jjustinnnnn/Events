@@ -11,10 +11,17 @@ const els = {
   dayFeature: document.getElementById('dayFeature'),
   weekFeature: document.getElementById('weekFeature'),
   upcomingFeature: document.getElementById('upcomingFeature'),
-  artistMessage: document.getElementById('artistMessage')
+  artistMessage: document.getElementById('artistMessage'),
+  carouselTrack: document.getElementById('carouselTrack'),
+  carouselViewport: document.getElementById('carouselViewport'),
+  carouselDots: document.getElementById('carouselDots'),
+  carouselPrev: document.getElementById('carouselPrev'),
+  carouselNext: document.getElementById('carouselNext')
 };
 
 let rows = [];
+let carouselIndex = 0;
+let carouselSlides = [];
 
 const norm = v => (v ?? '').toString().trim();
 const lower = v => norm(v).toLowerCase();
@@ -266,6 +273,84 @@ function initFilters() {
   fillSelect(els.year, uniqueSorted(rows.map(yearOf)), 'Years');
 }
 
+function featureItemsFor(slideIndex) {
+  return [els.dayFeature, els.weekFeature, els.upcomingFeature][slideIndex];
+}
+
+function updateCarousel() {
+  if (!els.carouselTrack) return;
+  const slides = carouselSlides.length || 3;
+  carouselIndex = Math.max(0, Math.min(carouselIndex, slides - 1));
+  els.carouselTrack.style.transform = `translateX(-${carouselIndex * 100}%)`;
+
+  if (els.carouselDots) {
+    [...els.carouselDots.querySelectorAll('.carousel-dot')].forEach((dot, i) => {
+      dot.classList.toggle('active', i === carouselIndex);
+      dot.setAttribute('aria-current', i === carouselIndex ? 'true' : 'false');
+    });
+  }
+}
+
+function buildCarousel() {
+  carouselSlides = [...document.querySelectorAll('.carousel-slide')];
+
+  if (!els.carouselDots) return;
+
+  els.carouselDots.innerHTML = carouselSlides
+    .map((_, i) => `<button class="carousel-dot${i === 0 ? ' active' : ''}" type="button" aria-label="Go to feature ${i + 1}" data-index="${i}"></button>`)
+    .join('');
+
+  els.carouselDots.addEventListener('click', e => {
+    const btn = e.target.closest('.carousel-dot');
+    if (!btn) return;
+    carouselIndex = Number(btn.dataset.index);
+    updateCarousel();
+  });
+
+  els.carouselPrev?.addEventListener('click', () => {
+    carouselIndex = (carouselIndex - 1 + carouselSlides.length) % carouselSlides.length;
+    updateCarousel();
+  });
+
+  els.carouselNext?.addEventListener('click', () => {
+    carouselIndex = (carouselIndex + 1) % carouselSlides.length;
+    updateCarousel();
+  });
+
+  let startX = 0;
+  let currentX = 0;
+  let dragging = false;
+
+  if (els.carouselViewport) {
+    els.carouselViewport.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      dragging = true;
+    }, { passive: true });
+
+    els.carouselViewport.addEventListener('touchmove', e => {
+      if (!dragging) return;
+      currentX = e.touches[0].clientX;
+    }, { passive: true });
+
+    els.carouselViewport.addEventListener('touchend', () => {
+      if (!dragging) return;
+      const delta = currentX - startX;
+      if (Math.abs(delta) > 40) {
+        carouselIndex = delta > 0
+          ? (carouselIndex - 1 + carouselSlides.length) % carouselSlides.length
+          : (carouselIndex + 1) % carouselSlides.length;
+        updateCarousel();
+      }
+      dragging = false;
+      startX = 0;
+      currentX = 0;
+    });
+  }
+
+  window.addEventListener('resize', updateCarousel);
+  updateCarousel();
+}
+
 function attachEvents() {
   [els.search, els.type, els.year].forEach(el =>
     el.addEventListener('input', () => {
@@ -295,6 +380,7 @@ async function main() {
 
   initFilters();
   buildFeatures();
+  buildCarousel();
   attachEvents();
   render();
   updateArtistMessage();
