@@ -105,6 +105,7 @@ select { width: 100%; padding: 13px 14px; }
 .highlights-carousel {
   position: relative;
   margin-top: 18px;
+  padding: 0 14px;
 }
 
 .carousel-viewport {
@@ -121,12 +122,14 @@ select { width: 100%; padding: 13px 14px; }
 .carousel-slide {
   flex: 0 0 100%;
   min-width: 100%;
+  padding: 0 6px;
 }
 
 .carousel-slide h2,
 .results-bar h2 {
   margin: 0 0 10px;
   font-size: 18px;
+  padding-left: 6px;
 }
 
 .feature-list {
@@ -164,8 +167,8 @@ select { width: 100%; padding: 13px 14px; }
   font-size: 28px;
 }
 
-.prev-btn { left: -12px; }
-.next-btn { right: -12px; }
+.prev-btn { left: -18px; }
+.next-btn { right: -18px; }
 
 .carousel-dots {
   display: flex;
@@ -235,6 +238,7 @@ select { width: 100%; padding: 13px 14px; }
 
   .highlights-carousel {
     overflow: hidden;
+    padding: 0 8px;
   }
 
   .carousel-btn {
@@ -271,7 +275,7 @@ select { width: 100%; padding: 13px 14px; }
   .filter-grid label { width: 100%; min-width: 0; }
   .filter-grid select { width: 100%; min-width: 0; max-width: 100%; }
   .compact-filters { overflow: hidden; }
-  .highlights-carousel { margin-top: 14px; }
+  .highlights-carousel { margin-top: 14px; padding: 0 6px; }
   .carousel-slide h2, .results-bar h2 { font-size: 16px; }
   .feature-list { min-height: 72px; max-height: 220px; padding: 12px; border-radius: 14px; }
   .results-panel { margin-top: 14px; }
