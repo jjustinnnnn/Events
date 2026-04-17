@@ -232,14 +232,13 @@ function renderPagedFeature(el, items, key, emptyText) {
   const hasMore = pageIndex < pages.length - 1;
   const hasPrevious = pageIndex > 0;
 
+  const btnText = hasPrevious ? 'Show less' : 'See more';
+
   el.innerHTML = `
     <div class="feature-page">
       ${visible.length ? visible.map(featureCard).join('') : `<div class="empty">${emptyText}</div>`}
     </div>
-    <div class="feature-actions">
-      ${hasPrevious ? `<button type="button" class="see-more-btn" data-feature="${key}" data-action="less">Show less</button>` : ''}
-      ${hasMore ? `<button type="button" class="see-more-btn" data-feature="${key}" data-action="more">See more</button>` : ''}
-    </div>
+    ${pages.length > 1 ? `<div class="feature-actions"><button type="button" class="see-more-btn" data-feature="${key}" data-action="${hasPrevious ? 'less' : 'more'}">${btnText}</button></div>` : ''}
   `;
 }
 
