@@ -83,25 +83,6 @@ button:hover { filter: brightness(.97); }
   line-height: 1.4;
 }
 
-.filter-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 16px;
-}
-
-.compact-filters { margin-top: 16px; }
-
-label span {
-  display: block;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--muted);
-  margin: 0 0 7px 2px;
-}
-
-select { width: 100%; padding: 13px 14px; }
-
 .highlights-carousel {
   position: relative;
   margin-top: 18px;
@@ -226,6 +207,27 @@ select { width: 100%; padding: 13px 14px; }
 
 .results { display: grid; gap: 14px; }
 
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.compact-filters {
+  margin-top: 12px;
+  margin-bottom: 18px;
+}
+
+label span {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  margin: 0 0 7px 2px;
+}
+
+select { width: 100%; padding: 13px 14px; }
+
 .card {
   padding: 18px 20px;
   border: 1px solid var(--line);
@@ -259,7 +261,7 @@ select { width: 100%; padding: 13px 14px; }
 }
 
 @media (max-width: 860px) {
-  .hero, .filter-grid { grid-template-columns: 1fr; }
+  .hero { grid-template-columns: 1fr; }
   .hero-card { text-align: left; }
   .search-row { flex-direction: column; }
   button { height: 48px; }
@@ -275,6 +277,10 @@ select { width: 100%; padding: 13px 14px; }
 
   .carousel-dots {
     display: flex;
+  }
+
+  .filter-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -299,10 +305,6 @@ select { width: 100%; padding: 13px 14px; }
   input[type="search"] { width: 100%; min-width: 0; padding: 14px; font-size: 16px; }
   button { width: 100%; height: 48px; }
   .artist-message { font-size: 13px; min-height: 20px; }
-  .filter-grid { gap: 10px; margin-top: 12px; grid-template-columns: 1fr; }
-  .filter-grid label { width: 100%; min-width: 0; }
-  .filter-grid select { width: 100%; min-width: 0; max-width: 100%; }
-  .compact-filters { overflow: hidden; }
   .highlights-carousel { margin-top: 14px; padding: 0 6px; touch-action: pan-y; }
   .carousel-slide h2, .results-bar h2 { font-size: 16px; }
   .feature-list { min-height: 72px; padding: 12px; border-radius: 14px; }
@@ -311,6 +313,14 @@ select { width: 100%; padding: 13px 14px; }
   .results-panel { margin-top: 14px; }
   .results-bar { flex-direction: column; align-items: flex-start; margin-bottom: 12px; }
   .results-count { font-size: 13px; }
+  .filter-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .compact-filters {
+    margin-top: 10px;
+    margin-bottom: 14px;
+  }
   .card { padding: 14px; border-radius: 16px; }
   .card h3 { font-size: 18px; }
   .card p { font-size: 14px; }
