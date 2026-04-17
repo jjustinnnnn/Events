@@ -231,7 +231,6 @@ function renderPagedFeature(el, items, key, emptyText) {
   const visible = pages[pageIndex] || [];
   const hasMore = pageIndex < pages.length - 1;
   const hasPrevious = pageIndex > 0;
-
   const btnText = hasPrevious ? 'Show less' : 'See more';
 
   el.innerHTML = `
@@ -261,11 +260,7 @@ function buildFeatures() {
         d.getDate() === todayDay
       );
     })
-    .sort(
-      (a, b) =>
-        (parseFlexibleDate(b.Date)?.getTime() || 0) -
-        (parseFlexibleDate(a.Date)?.getTime() || 0)
-    );
+    .sort((a, b) => (parseFlexibleDate(b.Date)?.getTime() || 0) - (parseFlexibleDate(a.Date)?.getTime() || 0));
 
   const weekMatches = rows
     .filter(r => {
@@ -277,11 +272,7 @@ function buildFeatures() {
         getWeekOfYear(d) === todayWeek
       );
     })
-    .sort(
-      (a, b) =>
-        (parseFlexibleDate(b.Date)?.getTime() || 0) -
-        (parseFlexibleDate(a.Date)?.getTime() || 0)
-    );
+    .sort((a, b) => (parseFlexibleDate(b.Date)?.getTime() || 0) - (parseFlexibleDate(a.Date)?.getTime() || 0));
 
   const upcomingMatches = rows
     .map(r => ({ ...r, _date: parseFlexibleDate(r.Date) }))
@@ -310,7 +301,9 @@ function updateFeaturePage(key, action) {
 
 function bindFeatureButtons() {
   document.querySelectorAll('.see-more-btn').forEach(btn => {
-    btn.onclick = () => {
+    btn.onclick = e => {
+      e.preventDefault();
+      e.stopPropagation();
       updateFeaturePage(btn.dataset.feature, btn.dataset.action);
     };
   });
@@ -362,6 +355,7 @@ function buildCarousel() {
 
   if (els.carouselViewport) {
     els.carouselViewport.addEventListener('touchstart', e => {
+      if (e.target.closest('.see-more-btn') || e.target.closest('.carousel-btn') || e.target.closest('.carousel-dot')) return;
       startX = e.touches[0].clientX;
       dragging = true;
     }, { passive: true });
@@ -409,6 +403,8 @@ function attachEvents() {
   document.addEventListener('click', e => {
     const btn = e.target.closest('.see-more-btn');
     if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
     updateFeaturePage(btn.dataset.feature, btn.dataset.action);
   });
 }
