@@ -230,12 +230,16 @@ function renderPagedFeature(el, items, key, emptyText) {
   const pageIndex = featurePageState[key] || 0;
   const visible = pages[pageIndex] || [];
   const hasMore = pageIndex < pages.length - 1;
+  const hasPrevious = pageIndex > 0;
 
   el.innerHTML = `
     <div class="feature-page">
       ${visible.length ? visible.map(featureCard).join('') : `<div class="empty">${emptyText}</div>`}
     </div>
-    ${hasMore ? `<button type="button" class="see-more-btn" data-feature="${key}">See more</button>` : ''}
+    <div class="feature-actions">
+      ${hasPrevious ? `<button type="button" class="see-more-btn" data-feature="${key}" data-action="less">Show less</button>` : ''}
+      ${hasMore ? `<button type="button" class="see-more-btn" data-feature="${key}" data-action="more">See more</button>` : ''}
+    </div>
   `;
 }
 
@@ -295,8 +299,12 @@ function initFilters() {
   fillSelect(els.year, uniqueSorted(rows.map(yearOf)), 'Years');
 }
 
-function updateFeaturePage(key) {
-  featurePageState[key] = (featurePageState[key] || 0) + 1;
+function updateFeaturePage(key, action) {
+  if (action === 'more') {
+    featurePageState[key] = (featurePageState[key] || 0) + 1;
+  } else {
+    featurePageState[key] = Math.max(0, (featurePageState[key] || 0) - 1);
+  }
   buildFeatures();
   bindFeatureButtons();
 }
@@ -304,8 +312,7 @@ function updateFeaturePage(key) {
 function bindFeatureButtons() {
   document.querySelectorAll('.see-more-btn').forEach(btn => {
     btn.onclick = () => {
-      const key = btn.dataset.feature;
-      updateFeaturePage(key);
+      updateFeaturePage(btn.dataset.feature, btn.dataset.action);
     };
   });
 }
@@ -403,7 +410,7 @@ function attachEvents() {
   document.addEventListener('click', e => {
     const btn = e.target.closest('.see-more-btn');
     if (!btn) return;
-    updateFeaturePage(btn.dataset.feature);
+    updateFeaturePage(btn.dataset.feature, btn.dataset.action);
   });
 }
 
