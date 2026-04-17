@@ -162,6 +162,12 @@ select { width: 100%; padding: 13px 14px; }
   margin-top: 10px;
 }
 
+.see-more-btn,
+.carousel-btn,
+.carousel-dot {
+  touch-action: manipulation;
+}
+
 .see-more-btn {
   width: 100%;
   border: 1px solid var(--line);
