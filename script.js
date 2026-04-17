@@ -22,6 +22,13 @@ const els = {
 let rows = [];
 let carouselIndex = 0;
 let carouselSlides = [];
+let featurePageState = {
+  day: 0,
+  week: 0,
+  upcoming: 0
+};
+
+const PAGE_SIZE = 5;
 
 const norm = v => (v ?? '').toString().trim();
 const lower = v => norm(v).toLowerCase();
@@ -200,11 +207,35 @@ function updateArtistMessage() {
 
 function featureCard(r) {
   return `
-    <div class="small" style="padding:8px 0;border-bottom:1px solid rgba(220,226,238,0.7)">
-      <strong>${escapeHtml(r.Artist)}</strong><br>
-      ${escapeHtml(displayDate(r.Date))} · ${escapeHtml(r.Venue)}
-      ${norm(r.Festival) ? `<br><span class="badge" style="margin-top:6px">${escapeHtml(r.Festival)}</span>` : ''}
+    <div class="small feature-row">
+      <div class="feature-text">
+        <strong>${escapeHtml(r.Artist)}</strong><br>
+        ${escapeHtml(displayDate(r.Date))} · ${escapeHtml(r.Venue)}
+        ${norm(r.Festival) ? `<br><span class="badge" style="margin-top:6px">${escapeHtml(r.Festival)}</span>` : ''}
+      </div>
     </div>
+  `;
+}
+
+function getFeaturePages(items) {
+  const pages = [];
+  for (let i = 0; i < items.length; i += PAGE_SIZE) {
+    pages.push(items.slice(i, i + PAGE_SIZE));
+  }
+  return pages;
+}
+
+function renderPagedFeature(el, items, key, emptyText) {
+  const pages = getFeaturePages(items);
+  const pageIndex = featurePageState[key] || 0;
+  const visible = pages[pageIndex] || [];
+  const hasMore = pageIndex < pages.length - 1;
+
+  el.innerHTML = `
+    <div class="feature-page">
+      ${visible.length ? visible.map(featureCard).join('') : `<div class="empty">${emptyText}</div>`}
+    </div>
+    ${hasMore ? `<button type="button" class="see-more-btn" data-feature="${key}">See more</button>` : ''}
   `;
 }
 
@@ -252,20 +283,11 @@ function buildFeatures() {
   const upcomingMatches = rows
     .map(r => ({ ...r, _date: parseFlexibleDate(r.Date) }))
     .filter(r => r._date && startOfDay(r._date).getTime() > today.getTime())
-    .sort((a, b) => a._date - b._date)
-    .slice(0, 3);
+    .sort((a, b) => a._date - b._date);
 
-  els.dayFeature.innerHTML = dayMatches.length
-    ? dayMatches.map(featureCard).join('')
-    : 'No historical matches for today yet. Go to more concerts!';
-
-  els.weekFeature.innerHTML = weekMatches.length
-    ? weekMatches.map(featureCard).join('')
-    : 'No historical matches for this week yet.';
-
-  els.upcomingFeature.innerHTML = upcomingMatches.length
-    ? upcomingMatches.map(featureCard).join('')
-    : 'No upcoming events found.';
+  renderPagedFeature(els.dayFeature, dayMatches, 'day', 'No historical matches for today yet. Go to more concerts!');
+  renderPagedFeature(els.weekFeature, weekMatches, 'week', 'No historical matches for this week yet.');
+  renderPagedFeature(els.upcomingFeature, upcomingMatches, 'upcoming', 'No upcoming events found.');
 }
 
 function initFilters() {
@@ -273,8 +295,19 @@ function initFilters() {
   fillSelect(els.year, uniqueSorted(rows.map(yearOf)), 'Years');
 }
 
-function featureItemsFor(slideIndex) {
-  return [els.dayFeature, els.weekFeature, els.upcomingFeature][slideIndex];
+function updateFeaturePage(key) {
+  featurePageState[key] = (featurePageState[key] || 0) + 1;
+  buildFeatures();
+  bindFeatureButtons();
+}
+
+function bindFeatureButtons() {
+  document.querySelectorAll('.see-more-btn').forEach(btn => {
+    btn.onclick = () => {
+      const key = btn.dataset.feature;
+      updateFeaturePage(key);
+    };
+  });
 }
 
 function updateCarousel() {
@@ -365,6 +398,12 @@ function attachEvents() {
     els.year.value = 'all';
     render();
     updateArtistMessage();
+  });
+
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.see-more-btn');
+    if (!btn) return;
+    updateFeaturePage(btn.dataset.feature);
   });
 }
 
