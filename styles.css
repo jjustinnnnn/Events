@@ -106,6 +106,7 @@ select { width: 100%; padding: 13px 14px; }
   position: relative;
   margin-top: 18px;
   padding: 0 14px;
+  touch-action: pan-y;
 }
 
 .carousel-viewport {
@@ -162,7 +163,7 @@ select { width: 100%; padding: 13px 14px; }
 }
 
 .see-more-btn {
-  flex: 1;
+  width: 100%;
   border: 1px solid var(--line);
   background: #fff;
   color: var(--accent);
@@ -296,7 +297,7 @@ select { width: 100%; padding: 13px 14px; }
   .filter-grid label { width: 100%; min-width: 0; }
   .filter-grid select { width: 100%; min-width: 0; max-width: 100%; }
   .compact-filters { overflow: hidden; }
-  .highlights-carousel { margin-top: 14px; padding: 0 6px; }
+  .highlights-carousel { margin-top: 14px; padding: 0 6px; touch-action: pan-y; }
   .carousel-slide h2, .results-bar h2 { font-size: 16px; }
   .feature-list { min-height: 72px; padding: 12px; border-radius: 14px; }
   .feature-actions { gap: 8px; }
