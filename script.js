@@ -1,7 +1,6 @@
 const CSV_PATH = 'Events_Database.csv';
 const els = {
   search: document.getElementById('searchInput'),
-  clear: document.getElementById('clearBtn'),
   type: document.getElementById('typeFilter'),
   year: document.getElementById('yearFilter'),
   total: document.getElementById('totalCount'),
@@ -434,14 +433,6 @@ function attachEvents() {
       updateArtistMessage();
     })
   );
-
-  els.clear.addEventListener('click', () => {
-    els.search.value = '';
-    els.type.value = 'all';
-    els.year.value = 'all';
-    render();
-    updateArtistMessage();
-  });
 
   document.addEventListener('click', e => {
     const btn = e.target.closest('.see-more-btn');
