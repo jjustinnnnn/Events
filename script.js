@@ -138,20 +138,45 @@ function getFiltered() {
   });
 }
 
-function cardHtml(r) {
+function exactArtistCount(artist) {
+  const target = norm(artist);
+  return rows.filter(r => norm(r.Artist) === target && isPastOrToday(r.Date)).length;
+}
+
+function cardHtml(r, index) {
+  const detailsId = `details-${index}`;
+  const count = exactArtistCount(r.Artist);
   const setlist = norm(r.Setlist)
     ? `<a href="${escapeHtml(r.Setlist)}" target="_blank" rel="noreferrer">Setlist.fm</a>`
     : '';
   const note = norm(r.Note) ? `<p>${escapeHtml(r.Note)}</p>` : '';
 
   return `
-    <article class="card">
+    <article class="card" data-artist="${escapeHtml(r.Artist)}">
       <div class="card-main">
         <div class="card-date">${escapeHtml(displayDate(r.Date))}</div>
         <h3>${escapeHtml(r.Artist)}</h3>
         <p>${escapeHtml(r.Venue)}</p>
         ${note}
         ${setlist ? `<div class="meta-line">${setlist}</div>` : ''}
+      </div>
+
+      <div class="details-card">
+        <button
+          type="button"
+          class="details-toggle"
+          aria-expanded="false"
+          aria-controls="${detailsId}"
+        >
+          <span>Details</span>
+          <span class="chev">⌄</span>
+        </button>
+
+        <div class="details-panel" id="${detailsId}" hidden>
+          <div class="details-content">
+            Number of times I've seen this artist: <strong>${count}</strong>
+          </div>
+        </div>
       </div>
     </article>
   `;
@@ -161,7 +186,7 @@ function render() {
   const filtered = getFiltered();
 
   els.results.innerHTML = filtered.length
-    ? filtered.map(cardHtml).join('')
+    ? filtered.map((r, i) => cardHtml(r, i)).join('')
     : '<div class="empty">No events matched your search.</div>';
 
   els.resultsCount.textContent = `${filtered.length} found`;
@@ -172,6 +197,7 @@ function render() {
   ].filter(Boolean);
 
   els.resultsHeading.textContent = active.length ? 'Filtered events' : 'All events';
+  bindDisclosureButtons();
 }
 
 function updateArtistMessage() {
@@ -229,7 +255,6 @@ function renderPagedFeature(el, items, key, emptyText) {
   const pages = getFeaturePages(items);
   const pageIndex = featurePageState[key] || 0;
   const visible = pages[pageIndex] || [];
-  const hasMore = pageIndex < pages.length - 1;
   const hasPrevious = pageIndex > 0;
   const btnText = hasPrevious ? 'Show less' : 'See more';
 
@@ -282,6 +307,7 @@ function buildFeatures() {
   renderPagedFeature(els.dayFeature, dayMatches, 'day', 'No historical matches for today yet. Go to more concerts!');
   renderPagedFeature(els.weekFeature, weekMatches, 'week', 'No historical matches for this week yet.');
   renderPagedFeature(els.upcomingFeature, upcomingMatches, 'upcoming', 'No upcoming events found.');
+  bindFeatureButtons();
 }
 
 function initFilters() {
@@ -296,7 +322,6 @@ function updateFeaturePage(key, action) {
     featurePageState[key] = Math.max(0, (featurePageState[key] || 0) - 1);
   }
   buildFeatures();
-  bindFeatureButtons();
 }
 
 function bindFeatureButtons() {
@@ -305,6 +330,24 @@ function bindFeatureButtons() {
       e.preventDefault();
       e.stopPropagation();
       updateFeaturePage(btn.dataset.feature, btn.dataset.action);
+    };
+  });
+}
+
+function bindDisclosureButtons() {
+  document.querySelectorAll('.details-toggle').forEach(btn => {
+    btn.onclick = e => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const panel = document.getElementById(btn.getAttribute('aria-controls'));
+      const open = btn.getAttribute('aria-expanded') === 'true';
+
+      btn.setAttribute('aria-expanded', String(!open));
+      if (panel) {
+        panel.hidden = open;
+        panel.classList.toggle('open', !open);
+      }
     };
   });
 }
@@ -355,7 +398,7 @@ function buildCarousel() {
 
   if (els.carouselViewport) {
     els.carouselViewport.addEventListener('touchstart', e => {
-      if (e.target.closest('.see-more-btn') || e.target.closest('.carousel-btn') || e.target.closest('.carousel-dot')) return;
+      if (e.target.closest('.see-more-btn') || e.target.closest('.carousel-btn') || e.target.closest('.carousel-dot') || e.target.closest('.details-toggle')) return;
       startX = e.touches[0].clientX;
       dragging = true;
     }, { passive: true });
