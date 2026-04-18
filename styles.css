@@ -84,27 +84,6 @@ button:hover { filter: brightness(.97); }
   line-height: 1.4;
 }
 
-.filter-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.compact-filters {
-  margin-top: 12px;
-  margin-bottom: 18px;
-}
-
-label span {
-  display: block;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--muted);
-  margin: 0 0 7px 2px;
-}
-
-select { width: 100%; padding: 13px 14px; }
-
 .highlights-carousel {
   position: relative;
   margin-top: 18px;
@@ -225,6 +204,27 @@ select { width: 100%; padding: 13px 14px; }
 .results-count { color: var(--muted); }
 
 .results { display: grid; gap: 14px; margin-top: 18px; }
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.compact-filters {
+  margin-top: 12px;
+  margin-bottom: 18px;
+}
+
+label span {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  margin: 0 0 7px 2px;
+}
+
+select { width: 100%; padding: 13px 14px; }
 
 .card {
   padding: 18px 20px;
