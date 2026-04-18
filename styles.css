@@ -34,8 +34,6 @@ body {
 
 h1 { margin: 0; font-size: clamp(40px, 6vw, 64px); line-height: .95; }
 
-.subtitle { margin: 12px 0 0; color: var(--muted); max-width: 58ch; font-size: 16px; }
-
 .hero-card, .panel {
   background: var(--panel);
   backdrop-filter: blur(14px);
@@ -51,7 +49,6 @@ h1 { margin: 0; font-size: clamp(40px, 6vw, 64px); line-height: .95; }
 }
 
 .hero-stat { font-size: 28px; font-weight: 800; color: var(--accent); }
-.hero-label { color: var(--muted); font-size: 13px; margin-top: 4px; }
 
 .panel { border-radius: var(--radius); padding: 22px; margin-top: 18px; }
 
@@ -260,6 +257,52 @@ select { width: 100%; padding: 13px 14px; }
   font-weight: 700;
 }
 
+.details-card {
+  margin-top: 10px;
+  border-top: 1px solid rgba(220,226,238,0.7);
+  padding-top: 10px;
+}
+
+.details-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-weight: 700;
+  text-align: left;
+}
+
+.details-toggle .chev {
+  transition: transform 0.2s ease;
+  color: var(--muted);
+}
+
+.details-toggle[aria-expanded="true"] .chev {
+  transform: rotate(180deg);
+}
+
+.details-panel {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.25s ease;
+}
+
+.details-panel.open {
+  max-height: 140px;
+}
+
+.details-content {
+  padding-top: 10px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 @media (max-width: 860px) {
   .hero { grid-template-columns: 1fr; }
   .hero-card { text-align: left; }
@@ -326,6 +369,7 @@ select { width: 100%; padding: 13px 14px; }
   .card p { font-size: 14px; }
   .card-date { font-size: 12px; }
   .meta-line { margin-top: 10px; font-size: 12px; gap: 8px; }
+  .details-content { font-size: 13px; }
 }
 
 .results-panel,
