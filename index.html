@@ -30,6 +30,21 @@
       </div>
       <div id="artistMessage" class="artist-message" aria-live="polite"></div>
 
+      <div class="filter-grid compact-filters">
+        <label>
+          <span>Type</span>
+          <select id="typeFilter">
+            <option value="all">All Types</option>
+          </select>
+        </label>
+        <label>
+          <span>Year</span>
+          <select id="yearFilter">
+            <option value="all">All Years</option>
+          </select>
+        </label>
+      </div>
+
       <div class="highlights-carousel">
         <button class="carousel-btn prev-btn" id="carouselPrev" type="button" aria-label="Previous feature">‹</button>
 
@@ -52,21 +67,6 @@
 
         <button class="carousel-btn next-btn" id="carouselNext" type="button" aria-label="Next feature">›</button>
         <div class="carousel-dots" id="carouselDots"></div>
-      </div>
-
-      <div class="filter-grid compact-filters">
-        <label>
-          <span>Type</span>
-          <select id="typeFilter">
-            <option value="all">All Types</option>
-          </select>
-        </label>
-        <label>
-          <span>Year</span>
-          <select id="yearFilter">
-            <option value="all">All Years</option>
-          </select>
-        </label>
       </div>
 
       <div id="results" class="results"></div>
