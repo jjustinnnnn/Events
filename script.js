@@ -175,7 +175,7 @@ function cardHtml(r, index) {
 
       <div class="details-panel" id="${detailsId}" hidden>
         <div class="details-content">
-          Number of times I've seen this artist: <strong>${count}</strong>
+          Artist concert count: <strong>${count}</strong>
         </div>
       </div>
     </article>
