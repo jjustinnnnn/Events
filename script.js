@@ -1,479 +1,312 @@
-const CSV_PATH = 'Events_Database.csv';
+let events = [];
+let filteredEvents = [];
+let currentCarouselPage = 0;
+const rowsPerCarouselPage = 3;
+let carouselPages = [];
+
 const els = {
-  search: document.getElementById('searchInput'),
-  year: document.getElementById('yearFilter'),
-  total: document.getElementById('totalCount'),
-  results: document.getElementById('results'),
+  totalCount: document.getElementById('totalCount'),
   resultsCount: document.getElementById('resultsCount'),
   resultsHeading: document.getElementById('resultsHeading'),
+  searchInput: document.getElementById('searchInput'),
+  yearFilter: document.getElementById('yearFilter'),
+  artistMessage: document.getElementById('artistMessage'),
+  results: document.getElementById('results'),
   dayFeature: document.getElementById('dayFeature'),
   weekFeature: document.getElementById('weekFeature'),
   upcomingFeature: document.getElementById('upcomingFeature'),
-  artistMessage: document.getElementById('artistMessage'),
   carouselTrack: document.getElementById('carouselTrack'),
-  carouselViewport: document.getElementById('carouselViewport'),
   carouselDots: document.getElementById('carouselDots'),
   carouselPrev: document.getElementById('carouselPrev'),
-  carouselNext: document.getElementById('carouselNext')
+  carouselNext: document.getElementById('carouselNext'),
+  carouselViewport: document.getElementById('carouselViewport')
 };
 
-let rows = [];
-let carouselIndex = 0;
-let carouselSlides = [];
-let featurePageState = {
-  day: 0,
-  week: 0,
-  upcoming: 0
-};
-
-const PAGE_SIZE = 5;
-
-const norm = v => (v ?? '').toString().trim();
-const lower = v => norm(v).toLowerCase();
-
-function parseFlexibleDate(v) {
-  const s = norm(v);
-  if (!s) return null;
-
-  const digits = s.replace(/\D/g, '');
-  if (digits.length === 8) {
-    const mm = digits.slice(0, 2);
-    const dd = digits.slice(2, 4);
-    const yyyy = digits.slice(4);
-
-    let d = new Date(`${yyyy}-${mm}-${dd}T00:00:00`);
-    if (!Number.isNaN(d.getTime())) return d;
-
-    d = new Date(`${yyyy}-${dd}-${mm}T00:00:00`);
-    if (!Number.isNaN(d.getTime())) return d;
-  }
-
-  const d = new Date(s);
-  return Number.isNaN(d.getTime()) ? null : d;
+function parseDate(value) {
+  if (!value) return null;
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : d;
 }
 
-function startOfToday() {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+function formatDate(value) {
+  const d = parseDate(value);
+  if (!d) return 'Unknown date';
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
-function startOfDay(d) {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+function normalize(str) {
+  return String(str || '').toLowerCase().trim();
 }
 
-function isPastOrToday(v) {
-  const d = parseFlexibleDate(v);
-  if (!d) return false;
-  return startOfDay(d).getTime() <= startOfToday().getTime();
-}
-
-function getWeekOfYear(date) {
-  const d = startOfDay(date);
-  const yearStart = new Date(d.getFullYear(), 0, 1);
-  return Math.ceil((((d - yearStart) / 86400000) + yearStart.getDay() + 1) / 7);
-}
-
-const yearOf = r => {
-  const d = parseFlexibleDate(r.Date);
+function getYear(value) {
+  const d = parseDate(value);
   return d ? String(d.getFullYear()) : '';
-};
-
-const displayDate = v => {
-  const d = parseFlexibleDate(v);
-  if (Number.isNaN(d?.getTime?.())) return norm(v);
-  if (!d) return norm(v);
-
-  return d.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  });
-};
-
-function uniqueSorted(values) {
-  return [...new Set(values.filter(Boolean))].sort((a, b) =>
-    a.localeCompare(b, undefined, { numeric: true })
-  );
-}
-
-function fillSelect(select, values, label) {
-  select.innerHTML =
-    `<option value="all">All ${label}</option>` +
-    values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
 }
 
 function escapeHtml(str) {
-  return norm(str)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
-function getFiltered() {
-  const q = lower(els.search.value);
-  const year = norm(els.year.value);
+function eventTitle(ev) {
+  return ev.artist || ev.event || ev.title || 'Untitled event';
+}
 
-  return rows.filter(r => {
-    if (!isPastOrToday(r.Date)) return false;
-    if (year !== 'all' && yearOf(r) !== year) return false;
-    if (!q) return true;
+function eventVenue(ev) {
+  return ev.venue || ev.location || '';
+}
 
-    const blob = [
-      r.Date,
-      r.Artist,
-      r.Venue,
-      r.Note,
-      r.Setlist,
-      r.Festival,
-      r.Type
-    ].map(lower).join(' | ');
+function sortByDateAsc(a, b) {
+  const da = parseDate(a.date) || new Date(0);
+  const db = parseDate(b.date) || new Date(0);
+  return da - db;
+}
 
-    return blob.includes(q);
+function sortByDateDesc(a, b) {
+  const da = parseDate(a.date) || new Date(0);
+  const db = parseDate(b.date) || new Date(0);
+  return db - da;
+}
+
+function buildYearOptions(list) {
+  const years = [...new Set(list.map(e => getYear(e.date)).filter(Boolean))].sort((a, b) => Number(b) - Number(a));
+  els.yearFilter.innerHTML = '<option value="all">All Years</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+}
+
+function matchesSearch(ev, q) {
+  if (!q) return true;
+  const hay = [
+    eventTitle(ev),
+    eventVenue(ev),
+    ev.note,
+    ev.notes,
+    ev.year,
+    ev.date,
+    ev.city,
+    ev.setlist,
+    ev.tags
+  ].filter(Boolean).join(' ').toLowerCase();
+  return hay.includes(q);
+}
+
+function applyFilters() {
+  const q = normalize(els.searchInput.value);
+  const year = els.yearFilter.value;
+
+  filteredEvents = events.filter(ev => {
+    if (year !== 'all' && getYear(ev.date) !== year) return false;
+    return matchesSearch(ev, q);
   });
+
+  els.resultsHeading.textContent = year === 'all' ? 'All events' : `Events in ${year}`;
+  els.resultsCount.textContent = `${filteredEvents.length} found`;
+
+  const artistQuery = q && filteredEvents.length > 0 ? `Showing results for "${els.searchInput.value.trim()}"` : '';
+  els.artistMessage.textContent = artistQuery;
+
+  renderResults();
+  renderFeatures();
 }
 
-function exactArtistCount(artist) {
-  const target = norm(artist);
-  return rows.filter(r => norm(r.Artist) === target && isPastOrToday(r.Date)).length;
-}
-
-function cardHtml(r, index) {
-  const detailsId = `details-${index}`;
-  const count = exactArtistCount(r.Artist);
-  const setlist = norm(r.Setlist)
-    ? `<a href="${escapeHtml(r.Setlist)}" target="_blank" rel="noreferrer">Setlist.fm</a>`
-    : '';
-  const note = norm(r.Note) ? `<p>${escapeHtml(r.Note)}</p>` : '';
-
-  return `
-    <article class="card" data-artist="${escapeHtml(r.Artist)}">
-      <div class="card-header">
-        <div class="card-main">
-          <div class="card-date">${escapeHtml(displayDate(r.Date))}</div>
-          <h3>${escapeHtml(r.Artist)}</h3>
-          <p>${escapeHtml(r.Venue)}</p>
-          ${note}
-          ${setlist ? `<div class="meta-line">${setlist}</div>` : ''}
-        </div>
-
-        <button
-          type="button"
-          class="card-toggle"
-          aria-expanded="false"
-          aria-controls="${detailsId}"
-          aria-label="Show more information about ${escapeHtml(r.Artist)}"
-        >
-          <span class="chev">⌄</span>
-        </button>
-      </div>
-
-      <div class="details-panel" id="${detailsId}" hidden>
-        <div class="details-content">
-          Artist concert count: <strong>${count}</strong>
-        </div>
-      </div>
-    </article>
-  `;
-}
-
-function render() {
-  const filtered = getFiltered();
-
-  els.results.innerHTML = filtered.length
-    ? filtered.map((r, i) => cardHtml(r, i)).join('')
-    : '<div class="empty">No events matched your search.</div>';
-
-  els.resultsCount.textContent = `${filtered.length} found`;
-
-  const active = [
-    els.year.value !== 'all' ? els.year.value : ''
-  ].filter(Boolean);
-
-  els.resultsHeading.textContent = active.length ? 'Filtered events' : 'All events';
-  bindDisclosureButtons();
-}
-
-function updateArtistMessage() {
-  const query = lower(els.search.value);
-
-  if (!query) {
-    els.artistMessage.textContent = '';
+function renderResults() {
+  if (!filteredEvents.length) {
+    els.results.innerHTML = `<div class="empty">No events match your search.</div>`;
     return;
   }
 
-  const matches = rows.filter(
-    r => isPastOrToday(r.Date) && lower(r.Artist).includes(query)
-  );
-
-  if (!matches.length) {
-    els.artistMessage.textContent = "Hmm...don't think you've seen them yet! Bummer...";
-    return;
-  }
-
-  matches.sort(
-    (a, b) =>
-      (parseFlexibleDate(b.Date)?.getTime() || 0) -
-      (parseFlexibleDate(a.Date)?.getTime() || 0)
-  );
-
-  const latest = matches[0];
-  const count = matches.length;
-  const countText = count === 1 ? 'once' : `${count} times`;
-
-  els.artistMessage.textContent =
-    `You've seen ${latest.Artist} ${countText}! The last time was on ${displayDate(latest.Date)} at ${latest.Venue}.`;
-}
-
-function featureCard(r) {
-  return `
-    <div class="small feature-row">
-      <div class="feature-text">
-        <strong>${escapeHtml(r.Artist)}</strong><br>
-        ${escapeHtml(displayDate(r.Date))} · ${escapeHtml(r.Venue)}
-        ${norm(r.Festival) ? `<br><span class="badge" style="margin-top:6px">${escapeHtml(r.Festival)}</span>` : ''}
-      </div>
-    </div>
-  `;
-}
-
-function getFeaturePages(items) {
-  const pages = [];
-  for (let i = 0; i < items.length; i += PAGE_SIZE) {
-    pages.push(items.slice(i, i + PAGE_SIZE));
-  }
-  return pages;
-}
-
-function renderPagedFeature(el, items, key, emptyText) {
-  const pages = getFeaturePages(items);
-  const pageIndex = featurePageState[key] || 0;
-  const visible = pages[pageIndex] || [];
-  const hasPrevious = pageIndex > 0;
-  const btnText = hasPrevious ? 'Show less' : 'See more';
-
-  el.innerHTML = `
-    <div class="feature-page">
-      ${visible.length ? visible.map(featureCard).join('') : `<div class="empty">${emptyText}</div>`}
-    </div>
-    ${pages.length > 1 ? `<div class="feature-actions"><button type="button" class="see-more-btn" data-feature="${key}" data-action="${hasPrevious ? 'less' : 'more'}">${btnText}</button></div>` : ''}
-  `;
-}
-
-function buildFeatures() {
-  const now = new Date();
-  const today = startOfToday();
-  const todayMonth = now.getMonth();
-  const todayDay = now.getDate();
-  const todayWeek = getWeekOfYear(now);
-  const currentYear = now.getFullYear();
-
-  const dayMatches = rows
-    .filter(r => {
-      const d = parseFlexibleDate(r.Date);
-      return (
-        d &&
-        d.getFullYear() !== currentYear &&
-        startOfDay(d).getTime() <= today.getTime() &&
-        d.getMonth() === todayMonth &&
-        d.getDate() === todayDay
-      );
+  els.results.innerHTML = filteredEvents
+    .sort(sortByDateDesc)
+    .map(ev => {
+      const title = escapeHtml(eventTitle(ev));
+      const date = escapeHtml(formatDate(ev.date));
+      const venue = escapeHtml(eventVenue(ev));
+      const note = escapeHtml(ev.note || ev.notes || '');
+      return `
+        <article class="card">
+          <div class="card-date">${date}</div>
+          <div class="card-header">
+            <div class="card-main">
+              <h3>${title}</h3>
+              ${venue ? `<p>${venue}</p>` : ''}
+              ${note ? `<p>${note}</p>` : ''}
+            </div>
+          </div>
+        </article>
+      `;
     })
-    .sort((a, b) => (parseFlexibleDate(b.Date)?.getTime() || 0) - (parseFlexibleDate(a.Date)?.getTime() || 0));
-
-  const weekMatches = rows
-    .filter(r => {
-      const d = parseFlexibleDate(r.Date);
-      return (
-        d &&
-        d.getFullYear() !== currentYear &&
-        startOfDay(d).getTime() <= today.getTime() &&
-        getWeekOfYear(d) === todayWeek
-      );
-    })
-    .sort((a, b) => (parseFlexibleDate(b.Date)?.getTime() || 0) - (parseFlexibleDate(a.Date)?.getTime() || 0));
-
-  const upcomingMatches = rows
-    .map(r => ({ ...r, _date: parseFlexibleDate(r.Date) }))
-    .filter(r => r._date && startOfDay(r._date).getTime() > today.getTime())
-    .sort((a, b) => a._date - b._date);
-
-  renderPagedFeature(els.dayFeature, dayMatches, 'day', 'No historical matches for today yet. Go to more concerts!');
-  renderPagedFeature(els.weekFeature, weekMatches, 'week', 'No historical matches for this week yet.');
-  renderPagedFeature(els.upcomingFeature, upcomingMatches, 'upcoming', 'No upcoming events found.');
-  bindFeatureButtons();
-}
-
-function initFilters() {
-  fillSelect(els.year, uniqueSorted(rows.map(yearOf)), 'Years');
-}
-
-function updateFeaturePage(key, action) {
-  if (action === 'more') {
-    featurePageState[key] = (featurePageState[key] || 0) + 1;
-  } else {
-    featurePageState[key] = Math.max(0, (featurePageState[key] || 0) - 1);
-  }
-  buildFeatures();
-}
-
-function bindFeatureButtons() {
-  document.querySelectorAll('.see-more-btn').forEach(btn => {
-    btn.onclick = e => {
-      e.preventDefault();
-      e.stopPropagation();
-      updateFeaturePage(btn.dataset.feature, btn.dataset.action);
-    };
-  });
-}
-
-function bindDisclosureButtons() {
-  document.querySelectorAll('.card-toggle').forEach(btn => {
-    btn.onclick = e => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const panel = document.getElementById(btn.getAttribute('aria-controls'));
-      const open = btn.getAttribute('aria-expanded') === 'true';
-
-      btn.setAttribute('aria-expanded', String(!open));
-      if (panel) {
-        panel.hidden = open;
-        panel.classList.toggle('open', !open);
-      }
-    };
-  });
-}
-
-function updateCarousel() {
-  if (!els.carouselTrack) return;
-  const slides = carouselSlides.length || 3;
-  carouselIndex = Math.max(0, Math.min(carouselIndex, slides - 1));
-  els.carouselTrack.style.transform = `translateX(-${carouselIndex * 100}%)`;
-
-  if (els.carouselDots) {
-    [...els.carouselDots.querySelectorAll('.carousel-dot')].forEach((dot, i) => {
-      dot.classList.toggle('active', i === carouselIndex);
-      dot.setAttribute('aria-current', i === carouselIndex ? 'true' : 'false');
-    });
-  }
-}
-
-function buildCarousel() {
-  carouselSlides = [...document.querySelectorAll('.carousel-slide')];
-
-  if (!els.carouselDots) return;
-
-  els.carouselDots.innerHTML = carouselSlides
-    .map((_, i) => `<button class="carousel-dot${i === 0 ? ' active' : ''}" type="button" aria-label="Go to feature ${i + 1}" data-index="${i}"></button>`)
     .join('');
-
-  els.carouselDots.addEventListener('click', e => {
-    const btn = e.target.closest('.carousel-dot');
-    if (!btn) return;
-    carouselIndex = Number(btn.dataset.index);
-    updateCarousel();
-  });
-
-  els.carouselPrev?.addEventListener('click', () => {
-    carouselIndex = (carouselIndex - 1 + carouselSlides.length) % carouselSlides.length;
-    updateCarousel();
-  });
-
-  els.carouselNext?.addEventListener('click', () => {
-    carouselIndex = (carouselIndex + 1) % carouselSlides.length;
-    updateCarousel();
-  });
-
-  let startX = 0;
-  let currentX = 0;
-  let dragging = false;
-
-  if (els.carouselViewport) {
-    els.carouselViewport.addEventListener('touchstart', e => {
-      if (e.target.closest('.card-toggle') || e.target.closest('.see-more-btn') || e.target.closest('.carousel-btn') || e.target.closest('.carousel-dot')) return;
-      startX = e.touches[0].clientX;
-      dragging = true;
-    }, { passive: true });
-
-    els.carouselViewport.addEventListener('touchmove', e => {
-      if (!dragging) return;
-      currentX = e.touches[0].clientX;
-    }, { passive: true });
-
-    els.carouselViewport.addEventListener('touchend', () => {
-      if (!dragging) return;
-      const delta = currentX - startX;
-      if (Math.abs(delta) > 40) {
-        carouselIndex = delta > 0
-          ? (carouselIndex - 1 + carouselSlides.length) % carouselSlides.length
-          : (carouselIndex + 1) % carouselSlides.length;
-        updateCarousel();
-      }
-      dragging = false;
-      startX = 0;
-      currentX = 0;
-    });
-  }
-
-  window.addEventListener('resize', updateCarousel);
-  updateCarousel();
 }
 
-function attachEvents() {
-  [els.search, els.year].forEach(el =>
-    el.addEventListener('input', () => {
-      render();
-      updateArtistMessage();
-    })
-  );
+function chunk(list, size) {
+  const out = [];
+  for (let i = 0; i < list.length; i += size) out.push(list.slice(i, i + size));
+  return out;
+}
 
-  document.addEventListener('click', e => {
-    const btn = e.target.closest('.see-more-btn');
-    if (!btn) return;
-    e.preventDefault();
-    e.stopPropagation();
-    updateFeaturePage(btn.dataset.feature, btn.dataset.action);
+function renderPagedList(container, items, pageIndex) {
+  const pages = chunk(items, rowsPerCarouselPage);
+  carouselPages = pages;
+  const totalPages = Math.max(1, pages.length);
+  const safeIndex = Math.max(0, Math.min(pageIndex, totalPages - 1));
+  currentCarouselPage = safeIndex;
+
+  if (!items.length) {
+    container.innerHTML = `<div class="empty">Nothing to show yet.</div>`;
+    return totalPages;
+  }
+
+  const pageItems = pages[safeIndex] || [];
+  const rowsHtml = pageItems.map(ev => {
+    const title = escapeHtml(eventTitle(ev));
+    const date = escapeHtml(formatDate(ev.date));
+    const venue = escapeHtml(eventVenue(ev));
+    return `
+      <div class="feature-row">
+        <strong>${title}</strong>
+        <div class="small">${date}${venue ? ` · ${venue}` : ''}</div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="feature-page">
+      ${rowsHtml}
+    </div>
+  `;
+
+  return totalPages;
+}
+
+function renderFeaturePagination(totalPages) {
+  els.carouselDots.innerHTML = '';
+  for (let i = 0; i < totalPages; i++) {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = `carousel-dot${i === currentCarouselPage ? ' active' : ''}`;
+    dot.setAttribute('aria-label', `Page ${i + 1} of ${totalPages}`);
+    dot.addEventListener('click', () => {
+      currentCarouselPage = i;
+      renderCarousel();
+    });
+    els.carouselDots.appendChild(dot);
+  }
+
+  els.carouselPrev.disabled = currentCarouselPage === 0;
+  els.carouselNext.disabled = currentCarouselPage >= totalPages - 1;
+  els.carouselPrev.setAttribute('aria-label', `Previous page, ${Math.max(1, currentCarouselPage)} of ${totalPages}`);
+  els.carouselNext.setAttribute('aria-label', `Next page, ${Math.min(totalPages, currentCarouselPage + 2)} of ${totalPages}`);
+  els.carouselPrev.textContent = '▲';
+  els.carouselNext.textContent = '▼';
+}
+
+function renderCarousel() {
+  const dayItems = events.filter(ev => {
+    const d = parseDate(ev.date);
+    if (!d) return false;
+    const now = new Date();
+    return d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+  }).sort(sortByDateDesc);
+
+  const weekItems = events.filter(ev => {
+    const d = parseDate(ev.date);
+    if (!d) return false;
+    const now = new Date();
+    const diffDays = Math.abs((d - now) / (1000 * 60 * 60 * 24));
+    return diffDays <= 7;
+  }).sort(sortByDateDesc);
+
+  const upcomingItems = events
+    .filter(ev => {
+      const d = parseDate(ev.date);
+      return d && d >= new Date();
+    })
+    .sort(sortByDateAsc);
+
+  const lists = [
+    { el: els.dayFeature, items: dayItems },
+    { el: els.weekFeature, items: weekItems },
+    { el: els.upcomingFeature, items: upcomingItems }
+  ];
+
+  let totalPages = 1;
+  lists.forEach(({ el, items }) => {
+    totalPages = Math.max(totalPages, renderPagedList(el, items, currentCarouselPage));
   });
 
-  document.addEventListener('click', e => {
-    const btn = e.target.closest('.card-toggle');
-    if (!btn) return;
-    e.preventDefault();
-    e.stopPropagation();
+  const maxPages = Math.max(
+    chunk(dayItems, rowsPerCarouselPage).length,
+    chunk(weekItems, rowsPerCarouselPage).length,
+    chunk(upcomingItems, rowsPerCarouselPage).length,
+    1
+  );
 
-    const panel = document.getElementById(btn.getAttribute('aria-controls'));
-    const open = btn.getAttribute('aria-expanded') === 'true';
+  const safePage = Math.min(currentCarouselPage, maxPages - 1);
+  currentCarouselPage = safePage;
 
-    btn.setAttribute('aria-expanded', String(!open));
-    if (panel) {
-      panel.hidden = open;
-      panel.classList.toggle('open', !open);
+  renderPagedList(els.dayFeature, dayItems, safePage);
+  renderPagedList(els.weekFeature, weekItems, safePage);
+  renderPagedList(els.upcomingFeature, upcomingItems, safePage);
+
+  els.carouselTrack.style.transform = `translateX(${-safePage * 100}%)`;
+  renderFeaturePagination(maxPages);
+}
+
+function prevPage() {
+  if (currentCarouselPage > 0) {
+    currentCarouselPage -= 1;
+    renderCarousel();
+  }
+}
+
+function nextPage() {
+  const maxPages = carouselPages.length || 1;
+  if (currentCarouselPage < maxPages - 1) {
+    currentCarouselPage += 1;
+    renderCarousel();
+  }
+}
+
+function inferFields(row) {
+  const lowerKeys = Object.keys(row).reduce((acc, k) => {
+    acc[k.toLowerCase()] = row[k];
+    return acc;
+  }, {});
+  return {
+    date: lowerKeys.date || lowerKeys.showdate || lowerKeys.show_date || lowerKeys.datetime || '',
+    artist: lowerKeys.artist || lowerKeys.band || lowerKeys.performer || lowerKeys.name || '',
+    venue: lowerKeys.venue || lowerKeys.location || lowerKeys.place || '',
+    city: lowerKeys.city || '',
+    note: lowerKeys.note || lowerKeys.notes || lowerKeys.memo || '',
+    year: lowerKeys.year || '',
+    title: lowerKeys.title || lowerKeys.event || ''
+  };
+}
+
+function loadData() {
+  const csvPath = 'Events_Database.csv';
+  Papa.parse(csvPath, {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: (results) => {
+      events = results.data.map(inferFields).filter(ev => eventTitle(ev) !== 'Untitled event' || ev.date || ev.venue);
+      els.totalCount.textContent = `${events.length} concerts`;
+      buildYearOptions(events);
+      applyFilters();
+    },
+    error: () => {
+      els.results.innerHTML = `<div class="empty">Could not load the data file.</div>`;
     }
   });
 }
 
-async function main() {
-  const response = await fetch(CSV_PATH);
-  const text = await response.text();
+els.searchInput.addEventListener('input', applyFilters);
+els.yearFilter.addEventListener('change', applyFilters);
+els.carouselPrev.addEventListener('click', prevPage);
+els.carouselNext.addEventListener('click', nextPage);
 
-  rows = Papa.parse(text, { header: true, skipEmptyLines: true }).data;
-  rows = rows.filter(r => norm(r.Date) && norm(r.Artist));
-
-  const pastOrTodayCount = rows.filter(r => isPastOrToday(r.Date)).length;
-  els.total.textContent = `${pastOrTodayCount.toLocaleString()} concerts since 2004`;
-
-  initFilters();
-  buildFeatures();
-  buildCarousel();
-  attachEvents();
-  render();
-  updateArtistMessage();
-}
-
-main().catch(err => {
-  els.results.innerHTML = `<div class="empty">Could not load CSV. Make sure <strong>Events_Database.csv</strong> is in the repo root.</div>`;
-  els.resultsCount.textContent = '0 found';
-  console.error(err);
-});
+loadData();
