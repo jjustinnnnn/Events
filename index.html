@@ -20,12 +20,6 @@
     </header>
 
     <section class="panel">
-      <div class="search-row">
-        <input id="searchInput" type="search" placeholder="Search artist, venue, note, or year..." />
-        <button id="clearBtn" type="button">Clear</button>
-      </div>
-      <div id="artistMessage" class="artist-message" aria-live="polite"></div>
-
       <div class="highlights-carousel">
         <button class="carousel-btn prev-btn" id="carouselPrev" type="button" aria-label="Previous feature">‹</button>
 
@@ -57,13 +51,12 @@
         <div class="results-count" id="resultsCount">0 found</div>
       </div>
 
+      <div class="search-row search-row-inline">
+        <input id="searchInput" type="search" placeholder="Search artist, venue, note, or year..." />
+      </div>
+      <div id="artistMessage" class="artist-message" aria-live="polite"></div>
+
       <div class="filter-grid compact-filters">
-        <label>
-          <span>Type</span>
-          <select id="typeFilter">
-            <option value="all">All Types</option>
-          </select>
-        </label>
         <label>
           <span>Year</span>
           <select id="yearFilter">

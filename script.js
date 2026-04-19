@@ -1,8 +1,6 @@
 const CSV_PATH = 'Events_Database.csv';
 const els = {
   search: document.getElementById('searchInput'),
-  clear: document.getElementById('clearBtn'),
-  type: document.getElementById('typeFilter'),
   year: document.getElementById('yearFilter'),
   total: document.getElementById('totalCount'),
   results: document.getElementById('results'),
@@ -115,12 +113,10 @@ function escapeHtml(str) {
 
 function getFiltered() {
   const q = lower(els.search.value);
-  const type = norm(els.type.value);
   const year = norm(els.year.value);
 
   return rows.filter(r => {
     if (!isPastOrToday(r.Date)) return false;
-    if (type !== 'all' && norm(r.Type) !== type) return false;
     if (year !== 'all' && yearOf(r) !== year) return false;
     if (!q) return true;
 
@@ -153,29 +149,29 @@ function cardHtml(r, index) {
 
   return `
     <article class="card" data-artist="${escapeHtml(r.Artist)}">
-      <div class="card-main">
-        <div class="card-date">${escapeHtml(displayDate(r.Date))}</div>
-        <h3>${escapeHtml(r.Artist)}</h3>
-        <p>${escapeHtml(r.Venue)}</p>
-        ${note}
-        ${setlist ? `<div class="meta-line">${setlist}</div>` : ''}
-      </div>
+      <div class="card-header">
+        <div class="card-main">
+          <div class="card-date">${escapeHtml(displayDate(r.Date))}</div>
+          <h3>${escapeHtml(r.Artist)}</h3>
+          <p>${escapeHtml(r.Venue)}</p>
+          ${note}
+          ${setlist ? `<div class="meta-line">${setlist}</div>` : ''}
+        </div>
 
-      <div class="details-card">
         <button
           type="button"
-          class="details-toggle"
+          class="card-toggle"
           aria-expanded="false"
           aria-controls="${detailsId}"
+          aria-label="Show more information about ${escapeHtml(r.Artist)}"
         >
-          <span>Details</span>
           <span class="chev">⌄</span>
         </button>
+      </div>
 
-        <div class="details-panel" id="${detailsId}" hidden>
-          <div class="details-content">
-            Number of times I've seen this artist: <strong>${count}</strong>
-          </div>
+      <div class="details-panel" id="${detailsId}" hidden>
+        <div class="details-content">
+          Artist concert count: <strong>${count}</strong>
         </div>
       </div>
     </article>
@@ -192,7 +188,6 @@ function render() {
   els.resultsCount.textContent = `${filtered.length} found`;
 
   const active = [
-    els.type.value !== 'all' ? els.type.value : '',
     els.year.value !== 'all' ? els.year.value : ''
   ].filter(Boolean);
 
@@ -311,7 +306,6 @@ function buildFeatures() {
 }
 
 function initFilters() {
-  fillSelect(els.type, uniqueSorted(rows.map(r => norm(r.Type))), 'Types');
   fillSelect(els.year, uniqueSorted(rows.map(yearOf)), 'Years');
 }
 
@@ -335,7 +329,7 @@ function bindFeatureButtons() {
 }
 
 function bindDisclosureButtons() {
-  document.querySelectorAll('.details-toggle').forEach(btn => {
+  document.querySelectorAll('.card-toggle').forEach(btn => {
     btn.onclick = e => {
       e.preventDefault();
       e.stopPropagation();
@@ -398,7 +392,7 @@ function buildCarousel() {
 
   if (els.carouselViewport) {
     els.carouselViewport.addEventListener('touchstart', e => {
-      if (e.target.closest('.see-more-btn') || e.target.closest('.carousel-btn') || e.target.closest('.carousel-dot') || e.target.closest('.details-toggle')) return;
+      if (e.target.closest('.card-toggle') || e.target.closest('.see-more-btn') || e.target.closest('.carousel-btn') || e.target.closest('.carousel-dot')) return;
       startX = e.touches[0].clientX;
       dragging = true;
     }, { passive: true });
@@ -428,20 +422,12 @@ function buildCarousel() {
 }
 
 function attachEvents() {
-  [els.search, els.type, els.year].forEach(el =>
+  [els.search, els.year].forEach(el =>
     el.addEventListener('input', () => {
       render();
       updateArtistMessage();
     })
   );
-
-  els.clear.addEventListener('click', () => {
-    els.search.value = '';
-    els.type.value = 'all';
-    els.year.value = 'all';
-    render();
-    updateArtistMessage();
-  });
 
   document.addEventListener('click', e => {
     const btn = e.target.closest('.see-more-btn');
@@ -449,6 +435,22 @@ function attachEvents() {
     e.preventDefault();
     e.stopPropagation();
     updateFeaturePage(btn.dataset.feature, btn.dataset.action);
+  });
+
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.card-toggle');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const panel = document.getElementById(btn.getAttribute('aria-controls'));
+    const open = btn.getAttribute('aria-expanded') === 'true';
+
+    btn.setAttribute('aria-expanded', String(!open));
+    if (panel) {
+      panel.hidden = open;
+      panel.classList.toggle('open', !open);
+    }
   });
 }
 
