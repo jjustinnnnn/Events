@@ -20,12 +20,38 @@ const els = {
 };
 
 function normalize(v) { return String(v || '').toLowerCase().trim(); }
-function parseDate(value) { const d = new Date(value); return isNaN(d.getTime()) ? null : d; }
+
+function parseDate(value) {
+  if (!value) return null;
+  const s = String(value).trim();
+  let d = new Date(s);
+  if (!isNaN(d.getTime())) return d;
+
+  const m = s.match(/^(\d{1,2})(\d{1,2})(\d{4})$/);
+  if (m) {
+    d = new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
+    if (!isNaN(d.getTime())) return d;
+  }
+
+  const ymd = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (ymd) {
+    d = new Date(Number(ymd[1]), Number(ymd[2]) - 1, Number(ymd[3]));
+    if (!isNaN(d.getTime())) return d;
+  }
+
+  return null;
+}
+
 function formatDate(value) {
   const d = parseDate(value);
   return d ? d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'Unknown date';
 }
-function getYear(value) { const d = parseDate(value); return d ? String(d.getFullYear()) : ''; }
+
+function getYear(value) {
+  const d = parseDate(value);
+  return d ? String(d.getFullYear()) : '';
+}
+
 function escapeHtml(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
@@ -34,16 +60,19 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+
 function pick(...vals) { return vals.find(v => v && String(v).trim()) || ''; }
 
 function inferRow(row) {
   const lower = Object.fromEntries(Object.entries(row).map(([k, v]) => [k.toLowerCase().trim(), v]));
-  const date = pick(lower.date, lower.showdate, lower.show_date, lower.datetime);
-  const artist = pick(lower.artist, lower.band, lower.performer, lower.name, lower.title, lower.event);
-  const venue = pick(lower.venue, lower.location, lower.place);
-  const note = pick(lower.note, lower.notes, lower.memo);
-  const type = pick(lower.type, lower.category);
-  return { ...row, date, artist, venue, note, type };
+  return {
+    ...row,
+    date: pick(lower.date, lower.showdate, lower.show_date, lower.datetime),
+    artist: pick(lower.artist, lower.band, lower.performer, lower.name, lower.title, lower.event),
+    venue: pick(lower.venue, lower.location, lower.place),
+    note: pick(lower.note, lower.notes, lower.memo),
+    type: pick(lower.type, lower.category)
+  };
 }
 
 function eventTitle(ev) { return ev.artist || ev.event || ev.title || ev.name || 'Untitled event'; }
@@ -64,28 +93,17 @@ function buildYearOptions(list) {
 
 function matchesSearch(ev, q) {
   if (!q) return true;
-  const hay = [
-    eventTitle(ev),
-    eventVenue(ev),
-    ev.note,
-    ev.type,
-    ev.year,
-    ev.date,
-    ev.city,
-    ev.tags
-  ].filter(Boolean).join(' ').toLowerCase();
+  const hay = [eventTitle(ev), eventVenue(ev), ev.note, ev.type, ev.year, ev.date, ev.city, ev.tags].filter(Boolean).join(' ').toLowerCase();
   return hay.includes(q);
 }
 
 function applyFilters() {
   const q = normalize(els.searchInput.value);
   const year = els.yearFilter.value;
-
   filteredEvents = events.filter(ev => {
     if (year !== 'all' && getYear(ev.date) !== year) return false;
     return matchesSearch(ev, q);
   });
-
   els.resultsHeading.textContent = year === 'all' ? 'All events' : `Events in ${year}`;
   els.resultsCount.textContent = `${filteredEvents.length} found`;
   els.artistMessage.textContent = q ? `Showing results for "${els.searchInput.value.trim()}"` : '';
@@ -99,7 +117,6 @@ function renderResults() {
     els.results.innerHTML = `<div class="empty">No events match your search.</div>`;
     return;
   }
-
   els.results.innerHTML = items.map(ev => {
     const title = escapeHtml(eventTitle(ev));
     const date = escapeHtml(formatDate(ev.date));
@@ -114,19 +131,16 @@ function renderPagedList(container, items, pageIndex) {
   const totalPages = Math.max(1, pages.length);
   const safeIndex = Math.max(0, Math.min(pageIndex, totalPages - 1));
   const pageItems = pages[safeIndex] || [];
-
   if (!items.length) {
     container.innerHTML = `<div class="empty">Nothing to show yet.</div>`;
     return totalPages;
   }
-
   container.innerHTML = `<div class="feature-page">${pageItems.map(ev => {
     const title = escapeHtml(eventTitle(ev));
     const date = escapeHtml(formatDate(ev.date));
     const venue = escapeHtml(eventVenue(ev));
     return `<div class="feature-row"><strong>${title}</strong><div class="small">${date}${venue ? ` · ${venue}` : ''}</div></div>`;
   }).join('')}</div>`;
-
   return totalPages;
 }
 
@@ -144,7 +158,6 @@ function renderPager(totalPages) {
     });
     els.carouselDots.appendChild(dot);
   }
-
   els.carouselPrev.disabled = activeCarouselPage === 0;
   els.carouselNext.disabled = activeCarouselPage >= totalPages - 1;
   els.carouselPrev.setAttribute('aria-label', `Previous page ${Math.max(1, activeCarouselPage)}/${totalPages}`);
@@ -200,19 +213,14 @@ function loadData() {
     header: true,
     skipEmptyLines: true,
     complete: (results) => {
-      const rows = (results.data || [])
-        .map(inferRow)
-        .filter(r => r.date || r.artist || r.title || r.event || r.venue);
-
+      const rows = (results.data || []).map(inferRow).filter(r => r.date || r.artist || r.title || r.event || r.venue);
       events = rows;
       filteredEvents = rows.slice();
       els.totalCount.textContent = `${events.length} concerts`;
       buildYearOptions(events);
       applyFilters();
     },
-    error: () => {
-      els.results.innerHTML = `<div class="empty">Could not load the data file.</div>`;
-    }
+    error: () => { els.results.innerHTML = `<div class="empty">Could not load the data file.</div>`; }
   });
 }
 
@@ -220,5 +228,4 @@ els.searchInput.addEventListener('input', applyFilters);
 els.yearFilter.addEventListener('change', applyFilters);
 els.carouselPrev.addEventListener('click', prevPage);
 els.carouselNext.addEventListener('click', nextPage);
-
 loadData();
