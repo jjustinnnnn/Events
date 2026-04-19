@@ -51,18 +51,20 @@
         <div class="results-count" id="resultsCount">0 found</div>
       </div>
 
-      <div class="search-row search-row-inline">
-        <input id="searchInput" type="search" placeholder="Search artist, venue, note, or year..." />
-      </div>
-      <div id="artistMessage" class="artist-message" aria-live="polite"></div>
+      <div class="search-filter-sticky">
+        <div class="search-row search-row-inline">
+          <input id="searchInput" type="search" placeholder="Search artist, venue, note, or year..." />
+        </div>
+        <div id="artistMessage" class="artist-message" aria-live="polite"></div>
 
-      <div class="filter-grid compact-filters">
-        <label>
-          <span>Year</span>
-          <select id="yearFilter">
-            <option value="all">All Years</option>
-          </select>
-        </label>
+        <div class="filter-grid compact-filters">
+          <label>
+            <span>Browse by year</span>
+            <select id="yearFilter">
+              <option value="all">All Years</option>
+            </select>
+          </label>
+        </div>
       </div>
 
       <div id="results" class="results"></div>
