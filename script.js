@@ -1,7 +1,6 @@
 const CSV_PATH = 'Events_Database.csv';
 const els = {
   search: document.getElementById('searchInput'),
-  type: document.getElementById('typeFilter'),
   year: document.getElementById('yearFilter'),
   total: document.getElementById('totalCount'),
   results: document.getElementById('results'),
@@ -114,12 +113,10 @@ function escapeHtml(str) {
 
 function getFiltered() {
   const q = lower(els.search.value);
-  const type = norm(els.type.value);
   const year = norm(els.year.value);
 
   return rows.filter(r => {
     if (!isPastOrToday(r.Date)) return false;
-    if (type !== 'all' && norm(r.Type) !== type) return false;
     if (year !== 'all' && yearOf(r) !== year) return false;
     if (!q) return true;
 
@@ -191,7 +188,6 @@ function render() {
   els.resultsCount.textContent = `${filtered.length} found`;
 
   const active = [
-    els.type.value !== 'all' ? els.type.value : '',
     els.year.value !== 'all' ? els.year.value : ''
   ].filter(Boolean);
 
@@ -310,7 +306,6 @@ function buildFeatures() {
 }
 
 function initFilters() {
-  fillSelect(els.type, uniqueSorted(rows.map(r => norm(r.Type))), 'Types');
   fillSelect(els.year, uniqueSorted(rows.map(yearOf)), 'Years');
 }
 
@@ -427,7 +422,7 @@ function buildCarousel() {
 }
 
 function attachEvents() {
-  [els.search, els.type, els.year].forEach(el =>
+  [els.search, els.year].forEach(el =>
     el.addEventListener('input', () => {
       render();
       updateArtistMessage();
