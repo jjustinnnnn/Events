@@ -85,15 +85,13 @@ function renderResults() {
 
 function renderFeatureCard(container, title, items) {
   if (!container) return;
-  if (!items.length) {
-    container.innerHTML = `<div class="empty">No results yet.</div>`;
-    return;
-  }
-  container.innerHTML = `<div class="feature-row"><strong>${title}</strong><div class="small">${items.slice(0, 3).map(ev => {
+  const list = items.slice(0, 3);
+  const body = list.length ? list.map(ev => {
     const date = escapeHtml(formatDate(ev.date));
     const venue = escapeHtml(eventVenue(ev));
-    return `<div>${escapeHtml(eventTitle(ev))}<div class="small">${date}${venue ? ` · ${venue}` : ''}</div></div>`;
-  }).join('')}</div></div>`;
+    return `<div class="feature-item"><strong>${escapeHtml(eventTitle(ev))}</strong><div class="small">${date}${venue ? ` · ${venue}` : ''}</div></div>`;
+  }).join('') : `<div class="empty">No results yet.</div>`;
+  container.innerHTML = `<h2>${title}</h2><div class="feature-list-inner">${body}</div>`;
 }
 
 function renderCarousel() {
@@ -105,6 +103,7 @@ function renderCarousel() {
   renderFeatureCard(els.dayFeature, 'On this day you saw...', dayItems);
   renderFeatureCard(els.weekFeature, 'On this week you saw...', weekItems);
   renderFeatureCard(els.upcomingFeature, 'Upcoming Events', upcomingItems);
+  console.log('carousel rendered', {dayItems: dayItems.length, weekItems: weekItems.length, upcomingItems: upcomingItems.length});
 
   if (els.carouselTrack) els.carouselTrack.style.transform = 'translateX(0)';
   if (els.carouselDots) els.carouselDots.innerHTML = '';
