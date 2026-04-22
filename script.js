@@ -20,8 +20,24 @@ const els = {
 };
 
 function normalize(v) { return String(v || '').toLowerCase().trim(); }
-function parseDate(value) { if (!value) return null; const d = new Date(value); return isNaN(d.getTime()) ? null : d; }
-function formatDate(value) { const d = parseDate(value); return d ? d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'Unknown date'; }
+function parseDate(value) {
+  if (!value) return null;
+  const s = String(value).trim();
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) {
+    const month = Number(m[1]) - 1;
+    const day = Number(m[2]);
+    const year = Number(m[3]);
+    const d = new Date(year, month, day);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+function formatDate(value) {
+  const d = parseDate(value);
+  return d ? d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'Unknown date';
+}
 function getYear(value) { const d = parseDate(value); return d ? String(d.getFullYear()) : ''; }
 function escapeHtml(str) { return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 function pick(...vals) { return vals.find(v => v && String(v).trim()) || ''; }
@@ -50,7 +66,7 @@ function buildYearOptions(list) {
 
 function matchesSearch(ev, q) {
   if (!q) return true;
-  const hay = [eventTitle(ev), eventVenue(ev), ev.note, ev.type, ev.year, ev.date, ev.city, ev.tags].filter(Boolean).join(' ').toLowerCase();
+  const hay = [eventTitle(ev), eventVenue(ev), ev.note, ev.type, ev.date, ev.city, ev.tags].filter(Boolean).join(' ').toLowerCase();
   return hay.includes(q);
 }
 
@@ -99,12 +115,9 @@ function renderCarousel() {
   const dayItems = events.filter(ev => { const d = parseDate(ev.date); return d && d.getMonth() === now.getMonth() && d.getDate() === now.getDate(); }).sort(sortByDateDesc);
   const weekItems = events.filter(ev => { const d = parseDate(ev.date); return d && Math.abs((d - now) / 86400000) <= 7; }).sort(sortByDateDesc);
   const upcomingItems = events.filter(ev => { const d = parseDate(ev.date); return d && d >= new Date(now.getFullYear(), now.getMonth(), now.getDate()); }).sort(sortByDateAsc);
-
   renderFeatureCard(els.dayFeature, 'On this day you saw...', dayItems);
   renderFeatureCard(els.weekFeature, 'On this week you saw...', weekItems);
   renderFeatureCard(els.upcomingFeature, 'Upcoming Events', upcomingItems);
-  console.log('carousel rendered', {dayItems: dayItems.length, weekItems: weekItems.length, upcomingItems: upcomingItems.length});
-
   if (els.carouselTrack) els.carouselTrack.style.transform = 'translateX(0)';
   if (els.carouselDots) els.carouselDots.innerHTML = '';
 }
