@@ -9,6 +9,8 @@ const els = {
   artistMessage: document.getElementById('artistMessage'),
   results: document.getElementById('results'),
   dayFeature: document.getElementById('dayFeature'),
+  weekFeature: document.getElementById('weekFeature'),
+  upcomingFeature: document.getElementById('upcomingFeature'),
   carouselTrack: document.getElementById('carouselTrack'),
   carouselDots: document.getElementById('carouselDots'),
   tabOnThisDay: document.getElementById('tabOnThisDay'),
@@ -100,8 +102,17 @@ function renderCarousel() {
     const d = parseDate(ev.date);
     return d && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
   }).sort(sortByDateDesc);
-
+  const weekItems = events.filter(ev => {
+    const d = parseDate(ev.date);
+    return d && Math.abs((d - now) / 86400000) <= 7;
+  }).sort(sortByDateDesc);
+  const upcomingItems = events.filter(ev => {
+    const d = parseDate(ev.date);
+    return d && d >= new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }).sort(sortByDateAsc);
   renderList(els.dayFeature, dayItems);
+  renderList(els.weekFeature, weekItems);
+  renderList(els.upcomingFeature, upcomingItems);
   els.carouselTrack.style.transform = 'translateX(0)';
   els.carouselDots.innerHTML = '';
 }
