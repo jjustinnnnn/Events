@@ -23,12 +23,14 @@ h1 { margin: 0; font-size: clamp(40px, 6vw, 64px); line-height: .95; }
 .panel { border-radius: var(--radius); padding: 22px; margin-top: 18px; }
 .section-panel[hidden] { display: none; }
 .section-panel.active-section { display: block; }
-.highlights-carousel { position: relative; margin-top: 4px; padding: 0 10px; touch-action: pan-y; }
-.carousel-viewport { overflow: hidden; border-radius: 18px; }
-.carousel-track { display: flex; transition: transform 0.35s ease; will-change: transform; }
-.carousel-slide { flex: 0 0 100%; min-width: 100%; padding: 0 6px; }
+.highlights-carousel { position: relative; margin-top: 4px; padding: 0 10px; touch-action: pan-y; overflow: visible; }
+.carousel-viewport { overflow: hidden; border-radius: 18px; width: 100%; }
+.carousel-track { display: flex; transition: transform 0.35s ease; will-change: transform; width: 100%; }
+.carousel-slide { flex: 0 0 100%; min-width: 100%; width: 100%; padding: 0 6px; display: block; }
 .carousel-slide h2, .results-bar h2 { margin: 0 0 8px; font-size: 17px; padding-left: 4px; }
-.feature-list { min-height: 72px; padding: 12px; border: 1px dashed var(--line); border-radius: 16px; background: rgba(255,255,255,0.62); color: var(--muted); }
+.feature-list { min-height: 72px; padding: 12px; border: 1px dashed var(--line); border-radius: 16px; background: rgba(255,255,255,0.62); color: var(--muted); display: block; }
+.feature-list-inner { display: grid; gap: 10px; }
+.feature-item { padding: 10px 12px; border-radius: 14px; background: rgba(255,255,255,0.72); border: 1px solid var(--line); }
 .carousel-dots { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
 .carousel-dot { width: 9px; height: 9px; border: 0; border-radius: 999px; background: #c7cee0; padding: 0; }
 .carousel-dot.active { background: var(--accent); }
