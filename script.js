@@ -83,38 +83,31 @@ function renderResults() {
   }).join('');
 }
 
-function renderList(container, items) {
+function renderFeatureCard(container, title, items) {
+  if (!container) return;
   if (!items.length) {
-    container.innerHTML = `<div class="empty">Loading…</div>`;
+    container.innerHTML = `<div class="empty">No results yet.</div>`;
     return;
   }
-  container.innerHTML = items.slice(0, 3).map(ev => {
-    const title = escapeHtml(eventTitle(ev));
+  container.innerHTML = `<div class="feature-row"><strong>${title}</strong><div class="small">${items.slice(0, 3).map(ev => {
     const date = escapeHtml(formatDate(ev.date));
     const venue = escapeHtml(eventVenue(ev));
-    return `<div class="feature-row"><strong>${title}</strong><div class="small">${date}${venue ? ` · ${venue}` : ''}</div></div>`;
-  }).join('');
+    return `<div>${escapeHtml(eventTitle(ev))}<div class="small">${date}${venue ? ` · ${venue}` : ''}</div></div>`;
+  }).join('')}</div></div>`;
 }
 
 function renderCarousel() {
   const now = new Date();
-  const dayItems = events.filter(ev => {
-    const d = parseDate(ev.date);
-    return d && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
-  }).sort(sortByDateDesc);
-  const weekItems = events.filter(ev => {
-    const d = parseDate(ev.date);
-    return d && Math.abs((d - now) / 86400000) <= 7;
-  }).sort(sortByDateDesc);
-  const upcomingItems = events.filter(ev => {
-    const d = parseDate(ev.date);
-    return d && d >= new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  }).sort(sortByDateAsc);
-  renderList(els.dayFeature, dayItems);
-  renderList(els.weekFeature, weekItems);
-  renderList(els.upcomingFeature, upcomingItems);
-  els.carouselTrack.style.transform = 'translateX(0)';
-  els.carouselDots.innerHTML = '';
+  const dayItems = events.filter(ev => { const d = parseDate(ev.date); return d && d.getMonth() === now.getMonth() && d.getDate() === now.getDate(); }).sort(sortByDateDesc);
+  const weekItems = events.filter(ev => { const d = parseDate(ev.date); return d && Math.abs((d - now) / 86400000) <= 7; }).sort(sortByDateDesc);
+  const upcomingItems = events.filter(ev => { const d = parseDate(ev.date); return d && d >= new Date(now.getFullYear(), now.getMonth(), now.getDate()); }).sort(sortByDateAsc);
+
+  renderFeatureCard(els.dayFeature, 'On this day you saw...', dayItems);
+  renderFeatureCard(els.weekFeature, 'On this week you saw...', weekItems);
+  renderFeatureCard(els.upcomingFeature, 'Upcoming Events', upcomingItems);
+
+  if (els.carouselTrack) els.carouselTrack.style.transform = 'translateX(0)';
+  if (els.carouselDots) els.carouselDots.innerHTML = '';
 }
 
 function setTab(tab) {
