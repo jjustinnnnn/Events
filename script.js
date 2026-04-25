@@ -16,7 +16,12 @@ const els = {
   carouselPrev: document.getElementById('carouselPrev'),
   carouselNext: document.getElementById('carouselNext'),
   topArtistsList: document.getElementById('topArtistsList'),
-  topVenuesList: document.getElementById('topVenuesList')
+  topVenuesList: document.getElementById('topVenuesList'),
+  highlightsPanel: document.getElementById('highlightsPanel'),
+  eventsPanel: document.getElementById('eventsPanel'),
+  toggleHighlights: document.getElementById('toggleHighlights'),
+  toggleEvents: document.getElementById('toggleEvents'),
+  toggleTrack: document.getElementById('toggleTrack')
 };
 
 let rows = [];
@@ -501,6 +506,24 @@ function buildCarousel() {
   updateCarousel();
 }
 
+function setView(view) {
+  const showHighlights = view === 'highlights';
+  els.highlightsPanel.style.display = showHighlights ? '' : 'none';
+  els.eventsPanel.style.display = showHighlights ? 'none' : '';
+  els.toggleHighlights.classList.toggle('active', showHighlights);
+  els.toggleEvents.classList.toggle('active', !showHighlights);
+  els.toggleTrack?.classList.toggle('right', !showHighlights);
+}
+
+function buildToggle() {
+  els.toggleHighlights?.addEventListener('click', () => setView('highlights'));
+  els.toggleEvents?.addEventListener('click', () => setView('events'));
+  els.toggleTrack?.addEventListener('click', () => {
+    const isHighlights = els.highlightsPanel.style.display !== 'none';
+    setView(isHighlights ? 'events' : 'highlights');
+  });
+}
+
 function attachEvents() {
   [els.search, els.year].forEach(el =>
     el.addEventListener('input', () => {
@@ -548,6 +571,7 @@ async function main() {
   buildStats();
   buildFeatures();
   buildCarousel();
+  buildToggle();
   attachEvents();
   render();
   updateArtistMessage();
