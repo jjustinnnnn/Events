@@ -510,6 +510,8 @@ function setView(view) {
   const showHighlights = view === 'highlights';
   els.highlightsPanel.style.display = showHighlights ? '' : 'none';
   els.eventsPanel.style.display = showHighlights ? 'none' : '';
+  const statsPanel = document.getElementById('statsPanel');
+  if (statsPanel) statsPanel.style.display = showHighlights ? '' : 'none';
   els.toggleHighlights.classList.toggle('active', showHighlights);
   els.toggleEvents.classList.toggle('active', !showHighlights);
   els.toggleTrack?.classList.toggle('right', !showHighlights);
