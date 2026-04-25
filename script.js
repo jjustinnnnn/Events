@@ -343,6 +343,47 @@ function featureCard(r) {
   `;
 }
 
+function upcomingFeatureCard(r) {
+  const today = startOfToday();
+  const showDay = startOfDay(r._date);
+  const diffMs = showDay.getTime() - today.getTime();
+  const daysAway = Math.round(diffMs / 86400000);
+
+  let countdownText;
+  if (daysAway === 0) countdownText = 'Today';
+  else if (daysAway === 1) countdownText = 'Tomorrow';
+  else countdownText = `${daysAway} days away`;
+
+  return `
+    <div class="small feature-row upcoming-row">
+      <div class="feature-text">
+        <strong>${escapeHtml(r.Artist)}</strong>
+        <span class="countdown-badge">${escapeHtml(countdownText)}</span>
+        <br>
+        ${escapeHtml(displayDate(r.Date))} · ${escapeHtml(r.Venue)}
+        ${norm(r.Festival) ? `<br><span class="badge" style="margin-top:6px">${escapeHtml(r.Festival)}</span>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderPagedFeatureUpcoming(el, items) {
+  const pages = getFeaturePages(items);
+  const pageIndex = featurePageState['upcoming'] || 0;
+  const visible = pages[pageIndex] || [];
+  const hasPrevious = pageIndex > 0;
+  const btnText = hasPrevious ? 'Show less' : 'See more';
+
+  el.innerHTML = `
+    <div class="feature-page">
+      ${visible.length
+        ? visible.map(upcomingFeatureCard).join('')
+        : `<div class="empty">No upcoming events found.</div>`}
+    </div>
+    ${pages.length > 1 ? `<div class="feature-actions"><button type="button" class="see-more-btn" data-feature="upcoming" data-action="${hasPrevious ? 'less' : 'more'}">${btnText}</button></div>` : ''}
+  `;
+}
+
 function getFeaturePages(items) {
   const pages = [];
   for (let i = 0; i < items.length; i += PAGE_SIZE) {
@@ -404,9 +445,9 @@ function buildFeatures() {
     .filter(r => r._date && startOfDay(r._date).getTime() > today.getTime())
     .sort((a, b) => a._date - b._date);
 
-  renderPagedFeature(els.dayFeature, dayMatches, 'day', 'No shows on this date — yet! Go make a memory. 🎸');
+  renderPagedFeature(els.dayFeature, dayMatches, 'day', 'No shows on this date — yet. Go make a memory.');
   renderPagedFeature(els.weekFeature, weekMatches, 'week', 'A quiet week historically. Time to fix that.');
-  renderPagedFeature(els.upcomingFeature, upcomingMatches, 'upcoming', 'No upcoming events found.');
+  renderPagedFeatureUpcoming(els.upcomingFeature, upcomingMatches);
   bindFeatureButtons();
 }
 
@@ -659,8 +700,8 @@ async function main() {
   })() : '';
 
   const heroStats = [
-    { value: pastOrTodayCount.toLocaleString(), label: 'total shows' },
-    { value: uniqueArtists.toLocaleString(), label: 'unique artists' },
+    { value: pastOrTodayCount.toLocaleString(), label: 'total performances' },
+    { value: uniqueArtists.toLocaleString(), label: 'artists' },
     { value: uniqueVenues.toLocaleString(), label: 'venues visited' },
     { value: topYear ? topYear[1].toLocaleString() : '', label: topYear ? `shows in ${topYear[0]}` : '' },
     { value: topMonth ? topMonth[1].toLocaleString() : '', label: `shows in ${topMonthLabel}` },
