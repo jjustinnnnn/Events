@@ -479,7 +479,7 @@ function buildScrubber() {
   if (!els.scrubberBarRow) return;
   els.scrubberBarRow.innerHTML = '';
 
-  years.forEach(yr => {
+  years.forEach((yr, i) => {
     const col = document.createElement('div');
     col.className = 'scrubber-col';
     col.dataset.yr = yr;
@@ -492,13 +492,17 @@ function buildScrubber() {
     bar.style.height = Math.max(3, Math.round((byYear[yr] / max) * 56)) + 'px';
     bar.title = `${yr}: ${byYear[yr]} shows`;
 
-    const label = document.createElement('div');
-    label.className = 'scrubber-yr-label';
-    label.textContent = String(yr).slice(2);
+    // Show full 4-digit label every 3 years, always show first and last
+    const showLabel = i === 0 || i === years.length - 1 || yr % 3 === 0;
+    if (showLabel) {
+      const label = document.createElement('div');
+      label.className = 'scrubber-yr-label';
+      label.textContent = String(yr);
+      col.appendChild(label);
+    }
 
     barWrap.appendChild(bar);
     col.appendChild(barWrap);
-    col.appendChild(label);
 
     col.addEventListener('click', () => {
       if (scrubberYear === yr) {
@@ -518,8 +522,21 @@ function selectScrubberYear(yr) {
   scrubberYear = yr;
 
   document.querySelectorAll('.scrubber-col').forEach(col => {
-    col.classList.toggle('active', Number(col.dataset.yr) === yr);
-    col.classList.toggle('dimmed', yr !== null && Number(col.dataset.yr) !== yr);
+    const colYr = Number(col.dataset.yr);
+    col.classList.toggle('active', colYr === yr);
+    col.classList.toggle('dimmed', yr !== null && colYr !== yr);
+
+    // If this bar is active but has no label, inject one temporarily
+    let dynLabel = col.querySelector('.scrubber-yr-label');
+    if (colYr === yr && !dynLabel) {
+      dynLabel = document.createElement('div');
+      dynLabel.className = 'scrubber-yr-label scrubber-yr-label--dynamic';
+      dynLabel.textContent = String(yr);
+      col.appendChild(dynLabel);
+    } else if (colYr !== yr) {
+      const dyn = col.querySelector('.scrubber-yr-label--dynamic');
+      if (dyn) dyn.remove();
+    }
   });
 
   if (els.scrubberLabel) els.scrubberLabel.textContent = yr ? String(yr) : 'All years';
