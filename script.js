@@ -15,12 +15,8 @@ const els = {
   carouselDots: document.getElementById('carouselDots'),
   carouselPrev: document.getElementById('carouselPrev'),
   carouselNext: document.getElementById('carouselNext'),
-  highlightsPanel: document.getElementById('highlightsPanel'),
-  eventsPanel: document.getElementById('eventsPanel'),
-  toggleHighlights: document.getElementById('toggleHighlights'),
-  toggleEvents: document.getElementById('toggleEvents'),
-  toggleThumb: document.getElementById('toggleThumb'),
-  toggleTrack: document.querySelector('.view-toggle-track')
+  topArtistsList: document.getElementById('topArtistsList'),
+  topVenuesList: document.getElementById('topVenuesList')
 };
 
 let rows = [];
@@ -145,13 +141,45 @@ function exactArtistCount(artist) {
   return rows.filter(r => norm(r.Artist) === target && isPastOrToday(r.Date)).length;
 }
 
+function artistTimelineHtml(artist) {
+  const shows = rows
+    .filter(r => norm(r.Artist) === norm(artist) && isPastOrToday(r.Date))
+    .sort((a, b) => (parseFlexibleDate(a.Date)?.getTime() || 0) - (parseFlexibleDate(b.Date)?.getTime() || 0));
+
+  if (!shows.length) return '';
+
+  const items = shows.map((show, i) => {
+    const isLast = i === shows.length - 1;
+    const setlistLink = norm(show.Setlist)
+      ? ` · <a href="${escapeHtml(show.Setlist)}" target="_blank" rel="noreferrer">Setlist</a>`
+      : '';
+    const festivalTag = norm(show.Festival)
+      ? ` <span class="tl-festival">${escapeHtml(show.Festival)}</span>`
+      : '';
+    return `
+      <li class="tl-item${isLast ? ' tl-item--last' : ''}">
+        <div class="tl-dot"></div>
+        <div class="tl-body">
+          <span class="tl-date">${escapeHtml(displayDate(show.Date))}</span>
+          <span class="tl-venue">${escapeHtml(show.Venue)}${setlistLink}</span>
+          ${festivalTag}
+        </div>
+      </li>`;
+  }).join('');
+
+  return `
+    <div class="tl-header">Seen ${shows.length} time${shows.length !== 1 ? 's' : ''}</div>
+    <ul class="tl-list">${items}</ul>
+  `;
+}
+
 function cardHtml(r, index) {
   const detailsId = `details-${index}`;
-  const count = exactArtistCount(r.Artist);
   const setlist = norm(r.Setlist)
     ? `<a href="${escapeHtml(r.Setlist)}" target="_blank" rel="noreferrer">Setlist.fm</a>`
     : '';
   const note = norm(r.Note) ? `<p>${escapeHtml(r.Note)}</p>` : '';
+  const timeline = artistTimelineHtml(r.Artist);
 
   return `
     <article class="card" data-artist="${escapeHtml(r.Artist)}">
@@ -177,7 +205,7 @@ function cardHtml(r, index) {
 
       <div class="details-panel" id="${detailsId}" hidden>
         <div class="details-content">
-          Artist concert count: <strong>${count}</strong>
+          ${timeline}
         </div>
       </div>
     </article>
@@ -232,11 +260,22 @@ function updateArtistMessage() {
     `You've seen ${latest.Artist} ${countText}! The last time was on ${displayDate(latest.Date)} at ${latest.Venue}.`;
 }
 
+function yearsAgoLabel(dateVal) {
+  const d = parseFlexibleDate(dateVal);
+  if (!d) return '';
+  const diff = new Date().getFullYear() - d.getFullYear();
+  if (diff <= 0) return '';
+  return diff === 1 ? '1 year ago' : `${diff} years ago`;
+}
+
 function featureCard(r) {
+  const ago = yearsAgoLabel(r.Date);
   return `
     <div class="small feature-row">
       <div class="feature-text">
-        <strong>${escapeHtml(r.Artist)}</strong><br>
+        <strong>${escapeHtml(r.Artist)}</strong>
+        ${ago ? `<span class="ago-badge">${escapeHtml(ago)}</span>` : ''}
+        <br>
         ${escapeHtml(displayDate(r.Date))} · ${escapeHtml(r.Venue)}
         ${norm(r.Festival) ? `<br><span class="badge" style="margin-top:6px">${escapeHtml(r.Festival)}</span>` : ''}
       </div>
@@ -313,6 +352,41 @@ function buildFeatures() {
 
 function initFilters() {
   fillSelect(els.year, uniqueSorted(rows.map(yearOf)), 'Years');
+}
+
+function buildStats() {
+  const past = rows.filter(r => isPastOrToday(r.Date));
+
+  const artistCount = {};
+  const venueCount = {};
+  past.forEach(r => {
+    const a = norm(r.Artist);
+    const v = norm(r.Venue);
+    if (a) artistCount[a] = (artistCount[a] || 0) + 1;
+    if (v) venueCount[v] = (venueCount[v] || 0) + 1;
+  });
+
+  const topArtists = Object.entries(artistCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const topVenues  = Object.entries(venueCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const maxA = topArtists[0]?.[1] || 1;
+  const maxV = topVenues[0]?.[1] || 1;
+
+  function listHtml(items, max) {
+    return items.map(([name, count], i) => `
+      <li class="stats-item">
+        <span class="stats-rank">${i + 1}</span>
+        <div class="stats-bar-wrap">
+          <div class="stats-name">${escapeHtml(name)}</div>
+          <div class="stats-bar-track">
+            <div class="stats-bar-fill" style="width:${Math.round((count / max) * 100)}%"></div>
+          </div>
+        </div>
+        <span class="stats-count">${count}</span>
+      </li>`).join('');
+  }
+
+  if (els.topArtistsList) els.topArtistsList.innerHTML = listHtml(topArtists, maxA);
+  if (els.topVenuesList)  els.topVenuesList.innerHTML  = listHtml(topVenues, maxV);
 }
 
 function updateFeaturePage(key, action) {
@@ -427,34 +501,6 @@ function buildCarousel() {
   updateCarousel();
 }
 
-// ── View Toggle ──
-function setView(view) {
-  const showHighlights = view === 'highlights';
-
-  els.highlightsPanel.style.display = showHighlights ? '' : 'none';
-  els.eventsPanel.style.display = showHighlights ? 'none' : '';
-
-  els.toggleHighlights.classList.toggle('active', showHighlights);
-  els.toggleEvents.classList.toggle('active', !showHighlights);
-
-  if (els.toggleTrack) {
-    els.toggleTrack.classList.toggle('right', !showHighlights);
-  }
-}
-
-function buildToggle() {
-  if (!els.toggleHighlights || !els.toggleEvents || !els.toggleTrack) return;
-
-  els.toggleHighlights.addEventListener('click', () => setView('highlights'));
-  els.toggleEvents.addEventListener('click', () => setView('events'));
-
-  els.toggleTrack.addEventListener('click', () => {
-    const isHighlights = els.highlightsPanel.style.display !== 'none';
-    setView(isHighlights ? 'events' : 'highlights');
-  });
-}
-// ─────────────────
-
 function attachEvents() {
   [els.search, els.year].forEach(el =>
     el.addEventListener('input', () => {
@@ -499,9 +545,9 @@ async function main() {
   els.total.textContent = `${pastOrTodayCount.toLocaleString()} concerts since 2004`;
 
   initFilters();
+  buildStats();
   buildFeatures();
   buildCarousel();
-  buildToggle();
   attachEvents();
   render();
   updateArtistMessage();
