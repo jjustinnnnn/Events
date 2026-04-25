@@ -586,11 +586,7 @@ function buildScrubber() {
   const canvas = els.scrubberCanvas;
   if (!canvas) return;
 
-  // Draw once layout is ready
-  requestAnimationFrame(() => {
-    drawScrubber();
-    window.addEventListener('resize', drawScrubber);
-  });
+  window.addEventListener('resize', drawScrubber);
 
   canvas.addEventListener('click', e => {
     const yr = yearFromClick(e.clientX);
@@ -770,6 +766,7 @@ function setView(view) {
   els.toggleHighlights.classList.toggle('active', showHighlights);
   els.toggleEvents.classList.toggle('active', !showHighlights);
   els.toggleTrack?.classList.toggle('right', !showHighlights);
+  if (!showHighlights) requestAnimationFrame(drawScrubber);
 }
 
 function buildToggle() {
