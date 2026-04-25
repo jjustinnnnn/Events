@@ -33,7 +33,15 @@
       </div>
     </section>
 
-    <section class="panel">
+    <div class="view-toggle-bar">
+      <button class="view-toggle-btn active" id="toggleHighlights" type="button">On this day</button>
+      <div class="view-toggle-track" id="toggleTrack">
+        <div class="view-toggle-thumb" id="toggleThumb"></div>
+      </div>
+      <button class="view-toggle-btn" id="toggleEvents" type="button">All Events</button>
+    </div>
+
+    <section class="panel" id="highlightsPanel">
       <div class="highlights-carousel">
         <button class="carousel-btn prev-btn" id="carouselPrev" type="button" aria-label="Previous feature">‹</button>
 
@@ -59,7 +67,7 @@
       </div>
     </section>
 
-    <section class="panel results-panel">
+    <section class="panel results-panel" id="eventsPanel" style="display:none">
       <div class="results-bar">
         <h2 id="resultsHeading">All events</h2>
         <div class="results-count" id="resultsCount">0 found</div>
