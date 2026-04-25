@@ -431,7 +431,9 @@ button:hover {
 
 /* ── Year Scrubber ── */
 .scrubber-section {
-  background: var(--accent-soft);
+  background: var(--panel);
+  border: 1px solid rgba(255,255,255,0.7);
+  box-shadow: var(--shadow);
   border-radius: 14px;
   padding: 14px 14px 0;
   margin-top: 14px;
