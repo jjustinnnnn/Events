@@ -71,7 +71,14 @@
     <section class="panel results-panel" id="eventsPanel" style="display:none">
       <div class="results-bar">
         <h2 id="resultsHeading">All events</h2>
-        <div class="results-count" id="resultsCount">0 found</div>
+        <div class="results-bar-right">
+          <div class="sort-toggle" id="sortToggle" role="group" aria-label="Sort order">
+            <button class="sort-btn active" data-sort="newest" type="button">Newest</button>
+            <button class="sort-btn" data-sort="oldest" type="button">Oldest</button>
+            <button class="sort-btn" data-sort="az" type="button">A–Z</button>
+          </div>
+          <div class="results-count" id="resultsCount">0 found</div>
+        </div>
       </div>
 
       <div class="search-filter-sticky">
@@ -83,13 +90,12 @@
         </div>
         <div id="artistMessage" class="artist-message" aria-live="polite"></div>
 
-        <div class="filter-grid compact-filters">
-          <label>
-            <span>Browse by year</span>
-            <select id="yearFilter">
-              <option value="all">All Years</option>
-            </select>
-          </label>
+        <div class="scrubber-section" id="scrubberSection">
+          <div class="scrubber-bar-row" id="scrubberBarRow"></div>
+          <div class="scrubber-footer">
+            <span class="scrubber-active-label" id="scrubberLabel">All years</span>
+            <button class="scrubber-reset-btn" id="scrubberReset" hidden type="button">Clear</button>
+          </div>
         </div>
       </div>
 
