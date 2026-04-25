@@ -272,9 +272,11 @@ function cardHtml(r, index, isDeduped = false) {
 
 function render() {
   const filtered = getFiltered();
+  const query = lower(els.search.value);
+  const { rows: displayRows, dedupedArtists } = getDisplayRows(filtered, query);
 
-  els.results.innerHTML = filtered.length
-    ? filtered.map((r, i) => cardHtml(r, i)).join('')
+  els.results.innerHTML = displayRows.length
+    ? displayRows.map((r, i) => cardHtml(r, i, dedupedArtists.has(norm(r.Artist)))).join('')
     : '<div class="empty">No events matched your search.</div>';
 
   els.resultsCount.textContent = `${filtered.length} found`;
