@@ -438,6 +438,62 @@ button:hover {
   display: block;
 }
 
+/* ── Year Scrubber ── */
+.scrubber-section {
+  background: var(--accent-soft);
+  border-radius: 14px;
+  padding: 14px 14px 0;
+  margin-top: 14px;
+  margin-bottom: 20px;
+}
+
+.scrubber-axis-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 8px;
+}
+
+.scrubber-canvas {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+}
+
+.scrubber-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 12px;
+}
+
+.scrubber-active-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.scrubber-reset-btn {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--accent);
+  cursor: pointer;
+  height: auto;
+  width: auto;
+}
+
+.scrubber-reset-btn:hover {
+  background: var(--accent-soft);
+  filter: none;
+}
+/* ─────────────────── */
+
 label span {
   display: block;
   font-size: 12px;
