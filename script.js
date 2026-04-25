@@ -492,24 +492,20 @@ function buildScrubber() {
     bar.style.height = Math.max(3, Math.round((byYear[yr] / max) * 56)) + 'px';
     bar.title = `${yr}: ${byYear[yr]} shows`;
 
-    // Show full 4-digit label every 3 years, always show first and last
-    const showLabel = i === 0 || i === years.length - 1 || yr % 3 === 0;
-    if (showLabel) {
-      const label = document.createElement('div');
-      label.className = 'scrubber-yr-label';
-      label.textContent = String(yr);
-      col.appendChild(label);
-    }
+    const label = document.createElement('div');
+    label.className = 'scrubber-yr-label';
+    label.textContent = String(yr);
+
+    // Only show labels every 3 years + first + last by default
+    const showByDefault = i === 0 || i === years.length - 1 || yr % 3 === 0;
+    label.style.visibility = showByDefault ? 'visible' : 'hidden';
 
     barWrap.appendChild(bar);
     col.appendChild(barWrap);
+    col.appendChild(label);
 
     col.addEventListener('click', () => {
-      if (scrubberYear === yr) {
-        selectScrubberYear(null);
-      } else {
-        selectScrubberYear(yr);
-      }
+      selectScrubberYear(scrubberYear === yr ? null : yr);
     });
 
     els.scrubberBarRow.appendChild(col);
@@ -523,19 +519,22 @@ function selectScrubberYear(yr) {
 
   document.querySelectorAll('.scrubber-col').forEach(col => {
     const colYr = Number(col.dataset.yr);
-    col.classList.toggle('active', colYr === yr);
-    col.classList.toggle('dimmed', yr !== null && colYr !== yr);
+    const isActive = colYr === yr;
+    col.classList.toggle('active', isActive);
+    col.classList.toggle('dimmed', yr !== null && !isActive);
 
-    // If this bar is active but has no label, inject one temporarily
-    let dynLabel = col.querySelector('.scrubber-yr-label');
-    if (colYr === yr && !dynLabel) {
-      dynLabel = document.createElement('div');
-      dynLabel.className = 'scrubber-yr-label scrubber-yr-label--dynamic';
-      dynLabel.textContent = String(yr);
-      col.appendChild(dynLabel);
-    } else if (colYr !== yr) {
-      const dyn = col.querySelector('.scrubber-yr-label--dynamic');
-      if (dyn) dyn.remove();
+    const label = col.querySelector('.scrubber-yr-label');
+    if (label) {
+      if (yr === null) {
+        // Back to default: show every 3 years + first + last
+        const years = [...document.querySelectorAll('.scrubber-col')].map(c => Number(c.dataset.yr));
+        const i = years.indexOf(colYr);
+        const showByDefault = i === 0 || i === years.length - 1 || colYr % 3 === 0;
+        label.style.visibility = showByDefault ? 'visible' : 'hidden';
+      } else {
+        // Only show the active year's label
+        label.style.visibility = isActive ? 'visible' : 'hidden';
+      }
     }
   });
 
