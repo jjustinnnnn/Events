@@ -446,8 +446,10 @@ button:hover {
 
 .scrubber-chart {
   position: relative;
-  padding-bottom: 20px;
-  border-bottom: 1.5px solid var(--line);
+  background: var(--accent-soft);
+  border-radius: 14px;
+  padding: 12px 10px 0;
+  margin-bottom: 24px;
 }
 
 .scrubber-bar-row {
@@ -495,12 +497,12 @@ button:hover {
 }
 
 .scrubber-yr-label {
-  position: absolute;
-  bottom: -18px;
   font-size: 10px;
   color: var(--muted);
   white-space: nowrap;
   pointer-events: none;
+  margin-top: 5px;
+  padding-bottom: 8px;
 }
 
 .scrubber-col.active .scrubber-yr-label {
@@ -512,9 +514,7 @@ button:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 14px;
-  padding-top: 10px;
-  border-top: 1px solid var(--line);
+  padding-top: 4px;
 }
 
 .scrubber-active-label {
@@ -907,14 +907,14 @@ select {
   }
 
   .hero-card {
-    text-align: left;
+    text-align: center;
   }
 
   .search-row {
     flex-direction: column;
   }
 
-  button {
+  button:not(.sort-btn):not(.view-toggle-btn):not(.scrubber-reset-btn):not(.card-toggle):not(.carousel-btn):not(.carousel-dot):not(.see-more-btn):not(.search-clear-btn) {
     height: 48px;
   }
 
@@ -968,6 +968,7 @@ select {
   .hero-card {
     padding: 14px 16px;
     min-width: 0;
+    text-align: center;
   }
 
   .hero-stat {
@@ -981,11 +982,11 @@ select {
   input[type="search"] {
     width: 100%;
     min-width: 0;
-    padding: 14px;
+    padding: 14px 40px 14px 14px;
     font-size: 16px;
   }
 
-  button {
+  button:not(.sort-btn):not(.view-toggle-btn):not(.scrubber-reset-btn):not(.card-toggle):not(.carousel-btn):not(.carousel-dot):not(.see-more-btn):not(.search-clear-btn) {
     width: 100%;
     height: 48px;
   }
@@ -1006,11 +1007,6 @@ select {
 
   .search-filter-sticky .artist-message {
     margin-top: 8px;
-  }
-
-  .search-filter-sticky .compact-filters {
-    margin-top: 0;
-    margin-bottom: 0;
   }
 
   .highlights-carousel {
@@ -1042,7 +1038,23 @@ select {
   .results-bar {
     flex-direction: column;
     align-items: flex-start;
+    gap: 8px;
     margin-bottom: 12px;
+  }
+
+  .results-bar-right {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .sort-toggle {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .sort-btn {
+    flex: 1;
+    text-align: center;
   }
 
   .results-count {
@@ -1083,6 +1095,23 @@ select {
   }
 
   .details-content {
+    font-size: 13px;
+  }
+
+  .scrubber-bar-row {
+    height: 48px;
+    gap: 1px;
+  }
+
+  .scrubber-bar-wrap {
+    height: 48px;
+  }
+
+  .scrubber-yr-label {
+    font-size: 9px;
+  }
+
+  .view-toggle-btn {
     font-size: 13px;
   }
 }
