@@ -1,7 +1,6 @@
 const CSV_PATH = 'Events_Database.csv';
 const els = {
   search: document.getElementById('searchInput'),
-  year: document.getElementById('yearFilter'),
   total: document.getElementById('totalCount'),
   results: document.getElementById('results'),
   resultsCount: document.getElementById('resultsCount'),
@@ -126,12 +125,10 @@ function escapeHtml(str) {
 
 function getFiltered() {
   const q = lower(els.search.value);
-  const year = norm(els.year.value);
 
   return rows.filter(r => {
     if (!isPastOrToday(r.Date)) return false;
     if (scrubberYear && yearOf(r) !== String(scrubberYear)) return false;
-    if (!scrubberYear && year !== 'all' && yearOf(r) !== year) return false;
     if (!q) return true;
 
     const blob = [
@@ -295,9 +292,9 @@ function render() {
     ? displayRows.map((r, i) => cardHtml(r, i, dedupedArtists.has(norm(r.Artist)))).join('')
     : '<div class="empty">No events matched your search.</div>';
 
-  const isFiltered = query || scrubberYear || els.year.value !== 'all';
+  const isFiltered = query || scrubberYear;
   els.resultsCount.textContent = isFiltered ? `${filtered.length} found` : '';
-  els.resultsHeading.textContent = scrubberYear ? String(scrubberYear) : els.year.value !== 'all' ? els.year.value : query ? 'Filtered events' : 'All events';
+  els.resultsHeading.textContent = scrubberYear ? String(scrubberYear) : query ? 'Filtered events' : 'All events';
   bindDisclosureButtons();
 }
 
@@ -472,6 +469,7 @@ function drawScrubber() {
   if (!canvas) return;
   const dpr = window.devicePixelRatio || 1;
   const cssWidth = canvas.offsetWidth;
+  if (!cssWidth) return;
   const cssHeight = 80;
   canvas.width = cssWidth * dpr;
   canvas.height = cssHeight * dpr;
@@ -495,12 +493,14 @@ function drawScrubber() {
   const accentDim = 'rgba(67,83,255,0.08)';
   const labelColor = '#667085';
   const labelActive = '#4353ff';
+  const labelFont = '10px system-ui';
+  const labelFontBold = 'bold 10px system-ui';
 
+  // Draw bars
   years.forEach((yr, i) => {
     const x = i * (barW + gap);
     const barH = Math.max(3, Math.round((scrubberData[yr] / max) * barAreaH));
     const y = barAreaH - barH;
-
     const isActive = scrubberYear === yr;
     const isDimmed = scrubberYear !== null && !isActive;
 
@@ -508,16 +508,48 @@ function drawScrubber() {
     ctx.beginPath();
     ctx.roundRect(x, y, barW, barH, [2, 2, 0, 0]);
     ctx.fill();
-
-    // Labels: show first, last, every 3rd year, or the active year
-    const showLabel = i === 0 || i === n - 1 || yr % 3 === 0 || isActive;
-    if (showLabel) {
-      ctx.fillStyle = isActive ? labelActive : labelColor;
-      ctx.font = isActive ? `bold 10px system-ui` : `10px system-ui`;
-      ctx.textAlign = 'center';
-      ctx.fillText(String(yr), x + barW / 2, barAreaH + labelH);
-    }
   });
+
+  // Draw labels — two modes:
+  // 1) A year is selected: only show that year's label
+  // 2) No selection: greedily place labels left-to-right, skip any that would overlap
+  ctx.textAlign = 'center';
+  const minGap = 4; // min pixel gap between labels
+  let lastLabelRight = -Infinity;
+
+  if (scrubberYear !== null) {
+    // Only draw the active label
+    const i = years.indexOf(scrubberYear);
+    if (i !== -1) {
+      const x = i * (barW + gap) + barW / 2;
+      ctx.font = labelFontBold;
+      ctx.fillStyle = labelActive;
+      ctx.fillText(String(scrubberYear), x, barAreaH + labelH);
+    }
+  } else {
+    // Greedy pass: try to fit as many labels as possible without overlap
+    // Candidate years: first, last, and multiples of 3
+    const candidates = years.filter((yr, i) =>
+      i === 0 || i === n - 1 || yr % 3 === 0
+    );
+
+    ctx.font = labelFont;
+    ctx.fillStyle = labelColor;
+
+    candidates.forEach(yr => {
+      const i = years.indexOf(yr);
+      const cx = i * (barW + gap) + barW / 2;
+      const text = String(yr);
+      const textW = ctx.measureText(text).width;
+      const left = cx - textW / 2;
+      const right = cx + textW / 2;
+
+      if (left > lastLabelRight + minGap) {
+        ctx.fillText(text, cx, barAreaH + labelH);
+        lastLabelRight = right;
+      }
+    });
+  }
 }
 
 function yearFromClick(clientX) {
@@ -758,12 +790,10 @@ function attachEvents() {
     });
   });
 
-  [els.search, els.year].forEach(el =>
-    el.addEventListener('input', () => {
-      render();
-      updateArtistMessage();
-    })
-  );
+  els.search.addEventListener('input', () => {
+    render();
+    updateArtistMessage();
+  });
 
   document.addEventListener('click', e => {
     const btn = e.target.closest('.see-more-btn');
@@ -867,7 +897,6 @@ async function main() {
     });
   }
 
-  initFilters();
   buildScrubber();
   buildStats();
   buildFeatures();
