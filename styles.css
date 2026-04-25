@@ -431,8 +431,11 @@ button:hover {
 
 /* ── Year Scrubber ── */
 .scrubber-section {
+  background: var(--accent-soft);
+  border-radius: 14px;
+  padding: 14px 14px 0;
   margin-top: 14px;
-  margin-bottom: 4px;
+  margin-bottom: 20px;
 }
 
 .scrubber-axis-label {
@@ -442,14 +445,6 @@ button:hover {
   text-transform: uppercase;
   letter-spacing: .06em;
   margin-bottom: 8px;
-}
-
-.scrubber-chart {
-  position: relative;
-  background: var(--accent-soft);
-  border-radius: 14px;
-  padding: 12px 10px 0;
-  margin-bottom: 24px;
 }
 
 .scrubber-bar-row {
@@ -514,7 +509,7 @@ button:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 4px;
+  padding: 8px 0 12px;
 }
 
 .scrubber-active-label {
