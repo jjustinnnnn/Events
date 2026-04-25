@@ -141,6 +141,50 @@ function getFiltered() {
   });
 }
 
+// When a search query matches rows that are predominantly one artist,
+// collapse them into a single artist card showing the timeline.
+// Non-artist matches (venue, note, year) stay as individual cards.
+function getDisplayRows(filtered, query) {
+  if (!query) return { rows: filtered, dedupedArtists: new Set() };
+
+  const byArtist = {};
+  filtered.forEach(r => {
+    const a = norm(r.Artist);
+    if (!byArtist[a]) byArtist[a] = [];
+    byArtist[a].push(r);
+  });
+
+  const dedupedArtists = new Set();
+  const displayRows = [];
+  const seen = new Set();
+
+  filtered.forEach(r => {
+    const a = norm(r.Artist);
+    const artistRows = byArtist[a];
+
+    // Artist name matches the query and they have multiple shows → one card
+    if (lower(r.Artist).includes(query) && artistRows.length > 1) {
+      if (!seen.has(a)) {
+        seen.add(a);
+        dedupedArtists.add(a);
+        const sorted = [...artistRows].sort(
+          (x, y) => (parseFlexibleDate(y.Date)?.getTime() || 0) - (parseFlexibleDate(x.Date)?.getTime() || 0)
+        );
+        displayRows.push(sorted[0]);
+      }
+    } else {
+      // Non-artist match (venue, note, etc.) — individual cards, no dedup
+      const key = a + '|' + norm(r.Date);
+      if (!seen.has(key)) {
+        seen.add(key);
+        displayRows.push(r);
+      }
+    }
+  });
+
+  return { rows: displayRows, dedupedArtists };
+}
+
 function exactArtistCount(artist) {
   const target = norm(artist);
   return rows.filter(r => norm(r.Artist) === target && isPastOrToday(r.Date)).length;
@@ -178,41 +222,50 @@ function artistTimelineHtml(artist) {
   `;
 }
 
-function cardHtml(r, index) {
+function cardHtml(r, index, isDeduped = false) {
   const detailsId = `details-${index}`;
   const setlist = norm(r.Setlist)
     ? `<a href="${escapeHtml(r.Setlist)}" target="_blank" rel="noreferrer">Setlist.fm</a>`
     : '';
   const note = norm(r.Note) ? `<p>${escapeHtml(r.Note)}</p>` : '';
   const timeline = artistTimelineHtml(r.Artist);
+  const showCount = exactArtistCount(r.Artist);
+  const hasTimeline = showCount > 1;
+
+  // Deduped artist card: show count instead of single date, omit venue/note/setlist
+  const headerContent = isDeduped
+    ? `<div class="card-date">${showCount} shows · most recently ${escapeHtml(displayDate(r.Date))}</div>
+       <h3>${escapeHtml(r.Artist)}</h3>
+       <p>${escapeHtml(r.Venue)}</p>`
+    : `<div class="card-date">${escapeHtml(displayDate(r.Date))}</div>
+       <h3>${escapeHtml(r.Artist)}</h3>
+       <p>${escapeHtml(r.Venue)}</p>
+       ${note}
+       ${setlist ? `<div class="meta-line">${setlist}</div>` : ''}`;
 
   return `
     <article class="card" data-artist="${escapeHtml(r.Artist)}">
       <div class="card-header">
         <div class="card-main">
-          <div class="card-date">${escapeHtml(displayDate(r.Date))}</div>
-          <h3>${escapeHtml(r.Artist)}</h3>
-          <p>${escapeHtml(r.Venue)}</p>
-          ${note}
-          ${setlist ? `<div class="meta-line">${setlist}</div>` : ''}
+          ${headerContent}
         </div>
-
+        ${hasTimeline ? `
         <button
           type="button"
           class="card-toggle"
           aria-expanded="false"
           aria-controls="${detailsId}"
-          aria-label="Show more information about ${escapeHtml(r.Artist)}"
+          aria-label="Show all shows for ${escapeHtml(r.Artist)}"
         >
           <span class="chev">⌄</span>
-        </button>
+        </button>` : ''}
       </div>
-
+      ${hasTimeline ? `
       <div class="details-panel" id="${detailsId}" hidden>
         <div class="details-content">
           ${timeline}
         </div>
-      </div>
+      </div>` : ''}
     </article>
   `;
 }
