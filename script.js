@@ -1,7 +1,6 @@
 const CSV_PATH = 'Events_Database.csv';
 const els = {
   search: document.getElementById('searchInput'),
-  year: document.getElementById('yearFilter'),
   total: document.getElementById('totalCount'),
   results: document.getElementById('results'),
   resultsCount: document.getElementById('resultsCount'),
@@ -21,10 +20,15 @@ const els = {
   eventsPanel: document.getElementById('eventsPanel'),
   toggleHighlights: document.getElementById('toggleHighlights'),
   toggleEvents: document.getElementById('toggleEvents'),
-  toggleTrack: document.getElementById('toggleTrack')
+  toggleTrack: document.getElementById('toggleTrack'),
+  scrubberBarRow: document.getElementById('scrubberBarRow'),
+  scrubberLabel: document.getElementById('scrubberLabel'),
+  scrubberReset: document.getElementById('scrubberReset')
 };
 
 let rows = [];
+let sortOrder = 'newest';
+let scrubberYear = null;
 let carouselIndex = 0;
 let carouselSlides = [];
 let featurePageState = {
@@ -120,11 +124,10 @@ function escapeHtml(str) {
 
 function getFiltered() {
   const q = lower(els.search.value);
-  const year = norm(els.year.value);
 
   return rows.filter(r => {
     if (!isPastOrToday(r.Date)) return false;
-    if (year !== 'all' && yearOf(r) !== year) return false;
+    if (scrubberYear && yearOf(r) !== String(scrubberYear)) return false;
     if (!q) return true;
 
     const blob = [
@@ -270,22 +273,33 @@ function cardHtml(r, index, isDeduped = false) {
   `;
 }
 
+function sortRows(filtered) {
+  const copy = [...filtered];
+  if (sortOrder === 'newest') {
+    return copy.sort((a, b) => (parseFlexibleDate(b.Date)?.getTime() || 0) - (parseFlexibleDate(a.Date)?.getTime() || 0));
+  }
+  if (sortOrder === 'oldest') {
+    return copy.sort((a, b) => (parseFlexibleDate(a.Date)?.getTime() || 0) - (parseFlexibleDate(b.Date)?.getTime() || 0));
+  }
+  if (sortOrder === 'az') {
+    return copy.sort((a, b) => norm(a.Artist).localeCompare(norm(b.Artist)));
+  }
+  return copy;
+}
+
 function render() {
   const filtered = getFiltered();
+  const sorted = sortRows(filtered);
   const query = lower(els.search.value);
-  const { rows: displayRows, dedupedArtists } = getDisplayRows(filtered, query);
+  const { rows: displayRows, dedupedArtists } = getDisplayRows(sorted, query);
 
   els.results.innerHTML = displayRows.length
     ? displayRows.map((r, i) => cardHtml(r, i, dedupedArtists.has(norm(r.Artist)))).join('')
     : '<div class="empty">No events matched your search.</div>';
 
-  els.resultsCount.textContent = `${filtered.length} found`;
-
-  const active = [
-    els.year.value !== 'all' ? els.year.value : ''
-  ].filter(Boolean);
-
-  els.resultsHeading.textContent = active.length ? 'Filtered events' : 'All events';
+  const isFiltered = query || scrubberYear;
+  els.resultsCount.textContent = isFiltered ? `${filtered.length} found` : '';
+  els.resultsHeading.textContent = scrubberYear ? `${scrubberYear}` : query ? 'Filtered events' : 'All events';
   bindDisclosureButtons();
 }
 
@@ -451,8 +465,68 @@ function buildFeatures() {
   bindFeatureButtons();
 }
 
-function initFilters() {
-  fillSelect(els.year, uniqueSorted(rows.map(yearOf)), 'Years');
+function buildScrubber() {
+  const past = rows.filter(r => isPastOrToday(r.Date));
+  const byYear = {};
+  past.forEach(r => {
+    const y = yearOf(r);
+    if (y) byYear[y] = (byYear[y] || 0) + 1;
+  });
+
+  const years = Object.keys(byYear).map(Number).sort((a, b) => a - b);
+  const max = Math.max(...Object.values(byYear));
+
+  if (!els.scrubberBarRow) return;
+  els.scrubberBarRow.innerHTML = '';
+
+  years.forEach(yr => {
+    const col = document.createElement('div');
+    col.className = 'scrubber-col';
+    col.dataset.yr = yr;
+
+    const barWrap = document.createElement('div');
+    barWrap.className = 'scrubber-bar-wrap';
+
+    const bar = document.createElement('div');
+    bar.className = 'scrubber-bar';
+    bar.style.height = Math.max(3, Math.round((byYear[yr] / max) * 56)) + 'px';
+    bar.title = `${yr}: ${byYear[yr]} shows`;
+
+    const label = document.createElement('div');
+    label.className = 'scrubber-yr-label';
+    label.textContent = String(yr).slice(2);
+
+    barWrap.appendChild(bar);
+    col.appendChild(barWrap);
+    col.appendChild(label);
+
+    col.addEventListener('click', () => {
+      if (scrubberYear === yr) {
+        selectScrubberYear(null);
+      } else {
+        selectScrubberYear(yr);
+      }
+    });
+
+    els.scrubberBarRow.appendChild(col);
+  });
+
+  els.scrubberReset?.addEventListener('click', () => selectScrubberYear(null));
+}
+
+function selectScrubberYear(yr) {
+  scrubberYear = yr;
+
+  document.querySelectorAll('.scrubber-col').forEach(col => {
+    col.classList.toggle('active', Number(col.dataset.yr) === yr);
+    col.classList.toggle('dimmed', yr !== null && Number(col.dataset.yr) !== yr);
+  });
+
+  if (els.scrubberLabel) els.scrubberLabel.textContent = yr ? String(yr) : 'All years';
+  if (els.scrubberReset) els.scrubberReset.hidden = yr === null;
+
+  render();
+  updateArtistMessage();
 }
 
 function buildStats() {
@@ -630,12 +704,18 @@ function buildToggle() {
 }
 
 function attachEvents() {
-  [els.search, els.year].forEach(el =>
-    el.addEventListener('input', () => {
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      sortOrder = btn.dataset.sort;
+      document.querySelectorAll('.sort-btn').forEach(b => b.classList.toggle('active', b === btn));
       render();
-      updateArtistMessage();
-    })
-  );
+    });
+  });
+
+  els.search.addEventListener('input', () => {
+    render();
+    updateArtistMessage();
+  });
 
   document.addEventListener('click', e => {
     const btn = e.target.closest('.see-more-btn');
@@ -674,10 +754,9 @@ async function main() {
 
   // Build rotating hero stats
   const uniqueArtists = new Set(pastRows.map(r => norm(r.Artist))).size;
-  const venueDays = new Set(
-    pastRows.filter(r => !norm(r.Festival)).map(r => norm(r.Venue) + '|' + norm(r.Date))
-  );
-  const uniqueVenues = new Set([...venueDays].map(k => k.split('|')[0])).size;
+  const uniqueVenues = new Set(
+    pastRows.filter(r => !norm(r.Festival) && norm(r.Venue)).map(r => norm(r.Venue))
+  ).size;
 
   const byYear = {};
   pastRows.forEach(r => {
@@ -740,7 +819,7 @@ async function main() {
     });
   }
 
-  initFilters();
+  buildScrubber();
   buildStats();
   buildFeatures();
   buildCarousel();
