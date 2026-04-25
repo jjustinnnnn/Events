@@ -484,19 +484,18 @@ function drawScrubber() {
   const n = years.length;
   const barAreaH = 56;
   const labelH = 14;
-  const gap = 2;
+  const gap = 3;
   const totalGaps = (n - 1) * gap;
-  const barW = (cssWidth - totalGaps) / n;
+  const barW = Math.max(2, (cssWidth - totalGaps) / n);
+  const radius = Math.min(barW / 2, 3);
 
-  const accent = '#4353ff';
-  const accentFaint = 'rgba(67,83,255,0.15)';
-  const accentDim = 'rgba(67,83,255,0.08)';
-  const labelColor = '#667085';
-  const labelActive = '#4353ff';
-  const labelFont = '10px system-ui';
-  const labelFontBold = 'bold 10px system-ui';
+  // Colors matching stats panel
+  const accent    = '#4353ff';       // active bar — same as stats-bar-fill
+  const barIdle   = '#dce2ee';       // unselected bar — same as var(--line) track
+  const barDimmed = '#eef0f6';       // dimmed when another year selected
+  const labelColor  = '#667085';     // var(--muted)
+  const labelActive = '#4353ff';     // var(--accent)
 
-  // Draw bars
   years.forEach((yr, i) => {
     const x = i * (barW + gap);
     const barH = Math.max(3, Math.round((scrubberData[yr] / max) * barAreaH));
@@ -504,21 +503,29 @@ function drawScrubber() {
     const isActive = scrubberYear === yr;
     const isDimmed = scrubberYear !== null && !isActive;
 
-    ctx.fillStyle = isDimmed ? accentDim : isActive ? accent : accentFaint;
+    // Draw full-height track (like stats-bar-track)
+    ctx.fillStyle = isDimmed ? barDimmed : barIdle;
     ctx.beginPath();
-    ctx.roundRect(x, y, barW, barH, [2, 2, 0, 0]);
+    ctx.roundRect(x, 0, barW, barAreaH, radius);
     ctx.fill();
+
+    // Draw filled portion on top (like stats-bar-fill)
+    ctx.fillStyle = isActive ? accent : isDimmed ? barDimmed : accent;
+    ctx.globalAlpha = isActive ? 1 : isDimmed ? 0.3 : 0.35;
+    ctx.beginPath();
+    ctx.roundRect(x, y, barW, barH, radius);
+    ctx.fill();
+    ctx.globalAlpha = 1;
   });
 
-  // Draw labels — two modes:
-  // 1) A year is selected: only show that year's label
-  // 2) No selection: greedily place labels left-to-right, skip any that would overlap
+  // Labels
   ctx.textAlign = 'center';
-  const minGap = 4; // min pixel gap between labels
+  const minGap = 4;
   let lastLabelRight = -Infinity;
+  const labelFont     = '10px system-ui';
+  const labelFontBold = 'bold 10px system-ui';
 
   if (scrubberYear !== null) {
-    // Only draw the active label
     const i = years.indexOf(scrubberYear);
     if (i !== -1) {
       const x = i * (barW + gap) + barW / 2;
@@ -527,23 +534,18 @@ function drawScrubber() {
       ctx.fillText(String(scrubberYear), x, barAreaH + labelH);
     }
   } else {
-    // Greedy pass: try to fit as many labels as possible without overlap
-    // Candidate years: first, last, and multiples of 3
     const candidates = years.filter((yr, i) =>
       i === 0 || i === n - 1 || yr % 3 === 0
     );
-
     ctx.font = labelFont;
     ctx.fillStyle = labelColor;
-
     candidates.forEach(yr => {
       const i = years.indexOf(yr);
       const cx = i * (barW + gap) + barW / 2;
       const text = String(yr);
       const textW = ctx.measureText(text).width;
-      const left = cx - textW / 2;
+      const left  = cx - textW / 2;
       const right = cx + textW / 2;
-
       if (left > lastLabelRight + minGap) {
         ctx.fillText(text, cx, barAreaH + labelH);
         lastLabelRight = right;
