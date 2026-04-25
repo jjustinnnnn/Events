@@ -429,120 +429,14 @@ button:hover {
   margin-bottom: 18px;
 }
 
-/* ── Year Scrubber ── */
-.scrubber-section {
-  background: var(--accent-soft);
-  border-radius: 14px;
-  padding: 14px 14px 0;
-  margin-top: 14px;
-  margin-bottom: 20px;
-  overflow: hidden;
+.compact-filters label {
   width: 100%;
-  box-sizing: border-box;
 }
 
-.scrubber-axis-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  margin-bottom: 8px;
-}
-
-.scrubber-bar-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 2px;
-  height: 60px;
+.compact-filters select {
   width: 100%;
-  min-width: 0;
+  display: block;
 }
-
-.scrubber-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-  min-width: 0;
-  height: 100%;
-  justify-content: flex-end;
-  cursor: pointer;
-  position: relative;
-}
-
-.scrubber-bar-wrap {
-  width: 100%;
-  min-width: 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  height: 60px;
-}
-
-.scrubber-bar {
-  width: 100%;
-  border-radius: 2px 2px 0 0;
-  background: var(--accent);
-  opacity: 0.2;
-  transition: opacity 0.15s;
-  min-height: 3px;
-}
-
-.scrubber-col:hover .scrubber-bar,
-.scrubber-col.active .scrubber-bar {
-  opacity: 1;
-}
-
-.scrubber-col.dimmed .scrubber-bar {
-  opacity: 0.08;
-}
-
-.scrubber-yr-label {
-  font-size: 10px;
-  color: var(--muted);
-  white-space: nowrap;
-  pointer-events: none;
-  margin-top: 5px;
-  padding-bottom: 8px;
-}
-
-.scrubber-col.active .scrubber-yr-label {
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.scrubber-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 0 12px;
-}
-
-.scrubber-active-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-}
-
-.scrubber-reset-btn {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: #fff;
-  color: var(--accent);
-  cursor: pointer;
-  height: auto;
-  width: auto;
-}
-
-.scrubber-reset-btn:hover {
-  background: var(--accent-soft);
-  filter: none;
-}
-/* ─────────────────── */
 
 label span {
   display: block;
@@ -1098,19 +992,6 @@ select {
 
   .details-content {
     font-size: 13px;
-  }
-
-  .scrubber-bar-row {
-    height: 48px;
-    gap: 1px;
-  }
-
-  .scrubber-bar-wrap {
-    height: 48px;
-  }
-
-  .scrubber-yr-label {
-    font-size: 9px;
   }
 
   .view-toggle-btn {
