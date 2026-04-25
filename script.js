@@ -1,6 +1,7 @@
 const CSV_PATH = 'Events_Database.csv';
 const els = {
   search: document.getElementById('searchInput'),
+  year: document.getElementById('yearFilter'),
   total: document.getElementById('totalCount'),
   results: document.getElementById('results'),
   resultsCount: document.getElementById('resultsCount'),
@@ -20,15 +21,11 @@ const els = {
   eventsPanel: document.getElementById('eventsPanel'),
   toggleHighlights: document.getElementById('toggleHighlights'),
   toggleEvents: document.getElementById('toggleEvents'),
-  toggleTrack: document.getElementById('toggleTrack'),
-  scrubberBarRow: document.getElementById('scrubberBarRow'),
-  scrubberLabel: document.getElementById('scrubberLabel'),
-  scrubberReset: document.getElementById('scrubberReset')
+  toggleTrack: document.getElementById('toggleTrack')
 };
 
 let rows = [];
 let sortOrder = 'newest';
-let scrubberYear = null;
 let carouselIndex = 0;
 let carouselSlides = [];
 let featurePageState = {
@@ -124,10 +121,11 @@ function escapeHtml(str) {
 
 function getFiltered() {
   const q = lower(els.search.value);
+  const year = norm(els.year.value);
 
   return rows.filter(r => {
     if (!isPastOrToday(r.Date)) return false;
-    if (scrubberYear && yearOf(r) !== String(scrubberYear)) return false;
+    if (year !== 'all' && yearOf(r) !== year) return false;
     if (!q) return true;
 
     const blob = [
@@ -297,9 +295,9 @@ function render() {
     ? displayRows.map((r, i) => cardHtml(r, i, dedupedArtists.has(norm(r.Artist)))).join('')
     : '<div class="empty">No events matched your search.</div>';
 
-  const isFiltered = query || scrubberYear;
+  const isFiltered = query || els.year.value !== 'all';
   els.resultsCount.textContent = isFiltered ? `${filtered.length} found` : '';
-  els.resultsHeading.textContent = scrubberYear ? `${scrubberYear}` : query ? 'Filtered events' : 'All events';
+  els.resultsHeading.textContent = els.year.value !== 'all' ? els.year.value : query ? 'Filtered events' : 'All events';
   bindDisclosureButtons();
 }
 
@@ -465,84 +463,8 @@ function buildFeatures() {
   bindFeatureButtons();
 }
 
-function buildScrubber() {
-  const past = rows.filter(r => isPastOrToday(r.Date));
-  const byYear = {};
-  past.forEach(r => {
-    const y = yearOf(r);
-    if (y) byYear[y] = (byYear[y] || 0) + 1;
-  });
-
-  const years = Object.keys(byYear).map(Number).sort((a, b) => a - b);
-  const max = Math.max(...Object.values(byYear));
-
-  if (!els.scrubberBarRow) return;
-  els.scrubberBarRow.innerHTML = '';
-
-  years.forEach((yr, i) => {
-    const col = document.createElement('div');
-    col.className = 'scrubber-col';
-    col.dataset.yr = yr;
-
-    const barWrap = document.createElement('div');
-    barWrap.className = 'scrubber-bar-wrap';
-
-    const bar = document.createElement('div');
-    bar.className = 'scrubber-bar';
-    bar.style.height = Math.max(3, Math.round((byYear[yr] / max) * 56)) + 'px';
-    bar.title = `${yr}: ${byYear[yr]} shows`;
-
-    const label = document.createElement('div');
-    label.className = 'scrubber-yr-label';
-    label.textContent = String(yr);
-
-    // Only show labels every 3 years + first + last by default
-    const showByDefault = i === 0 || i === years.length - 1 || yr % 3 === 0;
-    label.style.visibility = showByDefault ? 'visible' : 'hidden';
-
-    barWrap.appendChild(bar);
-    col.appendChild(barWrap);
-    col.appendChild(label);
-
-    col.addEventListener('click', () => {
-      selectScrubberYear(scrubberYear === yr ? null : yr);
-    });
-
-    els.scrubberBarRow.appendChild(col);
-  });
-
-  els.scrubberReset?.addEventListener('click', () => selectScrubberYear(null));
-}
-
-function selectScrubberYear(yr) {
-  scrubberYear = yr;
-
-  document.querySelectorAll('.scrubber-col').forEach(col => {
-    const colYr = Number(col.dataset.yr);
-    const isActive = colYr === yr;
-    col.classList.toggle('active', isActive);
-    col.classList.toggle('dimmed', yr !== null && !isActive);
-
-    const label = col.querySelector('.scrubber-yr-label');
-    if (label) {
-      if (yr === null) {
-        // Back to default: show every 3 years + first + last
-        const years = [...document.querySelectorAll('.scrubber-col')].map(c => Number(c.dataset.yr));
-        const i = years.indexOf(colYr);
-        const showByDefault = i === 0 || i === years.length - 1 || colYr % 3 === 0;
-        label.style.visibility = showByDefault ? 'visible' : 'hidden';
-      } else {
-        // Only show the active year's label
-        label.style.visibility = isActive ? 'visible' : 'hidden';
-      }
-    }
-  });
-
-  if (els.scrubberLabel) els.scrubberLabel.textContent = yr ? String(yr) : 'All years';
-  if (els.scrubberReset) els.scrubberReset.hidden = yr === null;
-
-  render();
-  updateArtistMessage();
+function initFilters() {
+  fillSelect(els.year, uniqueSorted(rows.map(yearOf)), 'Years');
 }
 
 function buildStats() {
@@ -728,10 +650,12 @@ function attachEvents() {
     });
   });
 
-  els.search.addEventListener('input', () => {
-    render();
-    updateArtistMessage();
-  });
+  [els.search, els.year].forEach(el =>
+    el.addEventListener('input', () => {
+      render();
+      updateArtistMessage();
+    })
+  );
 
   document.addEventListener('click', e => {
     const btn = e.target.closest('.see-more-btn');
@@ -835,7 +759,7 @@ async function main() {
     });
   }
 
-  buildScrubber();
+  initFilters();
   buildStats();
   buildFeatures();
   buildCarousel();
