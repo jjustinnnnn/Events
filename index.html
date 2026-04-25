@@ -15,7 +15,8 @@
         <h1>JJ's Concerts Archive</h1>
       </div>
       <div class="hero-card">
-        <div class="hero-stat" id="totalCount">0 concerts</div>
+        <div class="hero-stat-label" id="heroStatLabel">total shows</div>
+        <div class="hero-stat" id="totalCount">0</div>
       </div>
     </header>
 
@@ -75,7 +76,10 @@
 
       <div class="search-filter-sticky">
         <div class="search-row search-row-inline">
-          <input id="searchInput" type="search" placeholder="Search artist, venue, note, or year..." />
+          <div class="search-input-wrap">
+            <input id="searchInput" type="search" placeholder="Search artist, venue, note, or year..." />
+            <button type="button" class="search-clear-btn" id="searchClear" aria-label="Clear search" hidden>✕</button>
+          </div>
         </div>
         <div id="artistMessage" class="artist-message" aria-live="polite"></div>
 
