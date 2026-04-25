@@ -19,15 +19,21 @@
       </div>
     </header>
 
-    <div class="view-toggle-bar">
-      <button class="view-toggle-btn active" id="toggleHighlights" type="button">Highlights</button>
-      <div class="view-toggle-track">
-        <div class="view-toggle-thumb" id="toggleThumb"></div>
+    <section class="panel stats-panel" id="statsPanel">
+      <h2 class="stats-heading">Your Numbers</h2>
+      <div class="stats-grid" id="statsGrid">
+        <div class="stats-col">
+          <div class="stats-col-title">Top 10 Artists</div>
+          <ol class="stats-list" id="topArtistsList"></ol>
+        </div>
+        <div class="stats-col">
+          <div class="stats-col-title">Top 10 Venues</div>
+          <ol class="stats-list" id="topVenuesList"></ol>
+        </div>
       </div>
-      <button class="view-toggle-btn" id="toggleEvents" type="button">All Events</button>
-    </div>
+    </section>
 
-    <section class="panel" id="highlightsPanel">
+    <section class="panel">
       <div class="highlights-carousel">
         <button class="carousel-btn prev-btn" id="carouselPrev" type="button" aria-label="Previous feature">‹</button>
 
@@ -53,7 +59,7 @@
       </div>
     </section>
 
-    <section class="panel results-panel" id="eventsPanel" style="display:none">
+    <section class="panel results-panel">
       <div class="results-bar">
         <h2 id="resultsHeading">All events</h2>
         <div class="results-count" id="resultsCount">0 found</div>
