@@ -427,14 +427,12 @@ select {
   transform: rotate(180deg);
 }
 
-.details-panel {
-  overflow: hidden;
-  max-height: 0;
-  transition: max-height 0.3s ease;
+.details-panel[hidden] {
+  display: none;
 }
 
 .details-panel.open {
-  max-height: 600px;
+  display: block;
 }
 
 /* ── Stats Panel ── */
