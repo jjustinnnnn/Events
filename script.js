@@ -404,8 +404,8 @@ function buildFeatures() {
     .filter(r => r._date && startOfDay(r._date).getTime() > today.getTime())
     .sort((a, b) => a._date - b._date);
 
-  renderPagedFeature(els.dayFeature, dayMatches, 'day', 'No historical matches for today yet. Go to more concerts!');
-  renderPagedFeature(els.weekFeature, weekMatches, 'week', 'No historical matches for this week yet.');
+  renderPagedFeature(els.dayFeature, dayMatches, 'day', 'No shows on this date — yet! Go make a memory. 🎸');
+  renderPagedFeature(els.weekFeature, weekMatches, 'week', 'A quiet week historically. Time to fix that.');
   renderPagedFeature(els.upcomingFeature, upcomingMatches, 'upcoming', 'No upcoming events found.');
   bindFeatureButtons();
 }
@@ -626,10 +626,78 @@ async function main() {
   const text = await response.text();
 
   rows = Papa.parse(text, { header: true, skipEmptyLines: true }).data;
-  rows = rows.filter(r => norm(r.Date) && norm(r.Artist));
+  rows = rows.filter(r => norm(r.Date) && norm(r.Artist) && lower(r.Type) !== 'broadway');
 
-  const pastOrTodayCount = rows.filter(r => isPastOrToday(r.Date)).length;
-  els.total.textContent = `${pastOrTodayCount.toLocaleString()} concerts since 2004`;
+  const pastRows = rows.filter(r => isPastOrToday(r.Date));
+  const pastOrTodayCount = pastRows.length;
+
+  // Build rotating hero stats
+  const uniqueArtists = new Set(pastRows.map(r => norm(r.Artist))).size;
+  const venueDays = new Set(
+    pastRows.filter(r => !norm(r.Festival)).map(r => norm(r.Venue) + '|' + norm(r.Date))
+  );
+  const uniqueVenues = new Set([...venueDays].map(k => k.split('|')[0])).size;
+
+  const byYear = {};
+  pastRows.forEach(r => {
+    const y = yearOf(r);
+    if (y) byYear[y] = (byYear[y] || 0) + 1;
+  });
+  const topYear = Object.entries(byYear).sort((a, b) => b[1] - a[1])[0];
+
+  const byMonth = {};
+  pastRows.forEach(r => {
+    const d = parseFlexibleDate(r.Date);
+    if (!d) return;
+    const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    byMonth[key] = (byMonth[key] || 0) + 1;
+  });
+  const topMonth = Object.entries(byMonth).sort((a, b) => b[1] - a[1])[0];
+  const topMonthLabel = topMonth ? (() => {
+    const [y, m] = topMonth[0].split('-');
+    return new Date(+y, +m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  })() : '';
+
+  const heroStats = [
+    { value: pastOrTodayCount.toLocaleString(), label: 'total shows' },
+    { value: uniqueArtists.toLocaleString(), label: 'unique artists' },
+    { value: uniqueVenues.toLocaleString(), label: 'venues visited' },
+    { value: topYear ? topYear[1].toLocaleString() : '', label: topYear ? `shows in ${topYear[0]}` : '' },
+    { value: topMonth ? topMonth[1].toLocaleString() : '', label: `shows in ${topMonthLabel}` },
+  ].filter(s => s.value);
+
+  const heroStatEl = document.getElementById('totalCount');
+  const heroLabelEl = document.getElementById('heroStatLabel');
+  let heroIndex = 0;
+
+  function showHeroStat(idx) {
+    const stat = heroStats[idx % heroStats.length];
+    heroStatEl.classList.add('fading');
+    heroLabelEl.classList.add('fading');
+    setTimeout(() => {
+      heroStatEl.textContent = stat.value;
+      heroLabelEl.textContent = stat.label;
+      heroStatEl.classList.remove('fading');
+      heroLabelEl.classList.remove('fading');
+    }, 300);
+  }
+
+  showHeroStat(0);
+  setInterval(() => { heroIndex++; showHeroStat(heroIndex); }, 4000);
+
+  // Search clear button
+  const searchClear = document.getElementById('searchClear');
+  if (searchClear && els.search) {
+    els.search.addEventListener('input', () => {
+      searchClear.hidden = !els.search.value;
+    });
+    searchClear.addEventListener('click', () => {
+      els.search.value = '';
+      searchClear.hidden = true;
+      render();
+      updateArtistMessage();
+    });
+  }
 
   initFilters();
   buildStats();
