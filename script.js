@@ -489,12 +489,9 @@ function drawScrubber() {
   const barW = Math.max(2, (cssWidth - totalGaps) / n);
   const radius = Math.min(barW / 2, 3);
 
-  // Colors matching stats panel
-  const accent    = '#4353ff';       // active bar — same as stats-bar-fill
-  const barIdle   = '#dce2ee';       // unselected bar — same as var(--line) track
-  const barDimmed = '#eef0f6';       // dimmed when another year selected
-  const labelColor  = '#667085';     // var(--muted)
-  const labelActive = '#4353ff';     // var(--accent)
+  const accent      = '#4353ff';
+  const labelColor  = '#667085';
+  const labelActive = '#4353ff';
 
   years.forEach((yr, i) => {
     const x = i * (barW + gap);
@@ -503,15 +500,9 @@ function drawScrubber() {
     const isActive = scrubberYear === yr;
     const isDimmed = scrubberYear !== null && !isActive;
 
-    // Draw full-height track (like stats-bar-track)
-    ctx.fillStyle = isDimmed ? barDimmed : barIdle;
-    ctx.beginPath();
-    ctx.roundRect(x, 0, barW, barAreaH, radius);
-    ctx.fill();
-
-    // Draw filled portion on top (like stats-bar-fill)
-    ctx.fillStyle = isActive ? accent : isDimmed ? barDimmed : accent;
-    ctx.globalAlpha = isActive ? 1 : isDimmed ? 0.3 : 0.35;
+    // Draw only the proportional fill bar — no background track
+    ctx.fillStyle = accent;
+    ctx.globalAlpha = isActive ? 1 : isDimmed ? 0.12 : 0.3;
     ctx.beginPath();
     ctx.roundRect(x, y, barW, barH, radius);
     ctx.fill();
