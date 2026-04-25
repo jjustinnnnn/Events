@@ -368,7 +368,7 @@ function buildStats() {
     const a = norm(r.Artist);
     const v = norm(r.Venue);
     if (a) artistCount[a] = (artistCount[a] || 0) + 1;
-    if (v) venueCount[v] = (venueCount[v] || 0) + 1;
+    if (v && !norm(r.Festival)) venueCount[v] = (venueCount[v] || 0) + 1;
   });
 
   const topArtists = Object.entries(artistCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
