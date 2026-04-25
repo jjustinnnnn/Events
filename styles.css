@@ -429,15 +429,6 @@ button:hover {
   margin-bottom: 18px;
 }
 
-.compact-filters label {
-  width: 100%;
-}
-
-.compact-filters select {
-  width: 100%;
-  display: block;
-}
-
 /* ── Year Scrubber ── */
 .scrubber-section {
   background: var(--accent-soft);
