@@ -19,59 +19,56 @@
       </div>
     </header>
 
-    <nav class="tabs" role="tablist" aria-label="Page sections">
-      <button id="tabOnThisDay" class="tab active" type="button" role="tab" aria-selected="true" aria-controls="panelOnThisDay">On This Day You Saw</button>
-      <button id="tabAllEvents" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panelAllEvents">All Events / Search</button>
-    </nav>
+    <section class="panel">
+      <div class="highlights-carousel">
+        <button class="carousel-btn prev-btn" id="carouselPrev" type="button" aria-label="Previous feature">‹</button>
 
-    <main>
-      <section id="panelOnThisDay" class="panel section-panel active-section" role="tabpanel" aria-labelledby="tabOnThisDay">
-        <div class="highlights-carousel">
-          <div class="carousel-viewport" id="carouselViewport">
-            <div class="carousel-track" id="carouselTrack">
-              <div class="carousel-slide">
-                <h2>On this day you saw...</h2>
-                <div id="dayFeature" class="feature-list">Loading…</div>
-              </div>
-              <div class="carousel-slide">
-                <h2>On this week you saw...</h2>
-                <div id="weekFeature" class="feature-list">Loading…</div>
-              </div>
-              <div class="carousel-slide">
-                <h2>Upcoming Events</h2>
-                <div id="upcomingFeature" class="feature-list">Loading…</div>
-              </div>
+        <div class="carousel-viewport" id="carouselViewport">
+          <div class="carousel-track" id="carouselTrack">
+            <div class="carousel-slide">
+              <h2>On this day you saw...</h2>
+              <div id="dayFeature" class="feature-list">Loading…</div>
+            </div>
+            <div class="carousel-slide">
+              <h2>On this week you saw...</h2>
+              <div id="weekFeature" class="feature-list">Loading…</div>
+            </div>
+            <div class="carousel-slide">
+              <h2>Upcoming Events</h2>
+              <div id="upcomingFeature" class="feature-list">Loading…</div>
             </div>
           </div>
-          <div class="carousel-dots" id="carouselDots"></div>
-        </div>
-      </section>
-
-      <section id="panelAllEvents" class="panel results-panel section-panel" role="tabpanel" aria-labelledby="tabAllEvents" hidden>
-        <div class="results-bar">
-          <h2 id="resultsHeading">All events</h2>
-          <div class="results-count" id="resultsCount">0 found</div>
         </div>
 
-        <div class="search-filter-sticky">
-          <div class="search-row search-row-inline">
-            <input id="searchInput" type="search" placeholder="Search artist, venue, note, or year..." />
-          </div>
-          <div id="artistMessage" class="artist-message" aria-live="polite"></div>
+        <button class="carousel-btn next-btn" id="carouselNext" type="button" aria-label="Next feature">›</button>
+        <div class="carousel-dots" id="carouselDots"></div>
+      </div>
+    </section>
 
-          <div class="filter-grid compact-filters">
-            <label>
-              <span>Browse by year</span>
-              <select id="yearFilter">
-                <option value="all">All Years</option>
-              </select>
-            </label>
-          </div>
+    <section class="panel results-panel">
+      <div class="results-bar">
+        <h2 id="resultsHeading">All events</h2>
+        <div class="results-count" id="resultsCount">0 found</div>
+      </div>
+
+      <div class="search-filter-sticky">
+        <div class="search-row search-row-inline">
+          <input id="searchInput" type="search" placeholder="Search artist, venue, note, or year..." />
         </div>
+        <div id="artistMessage" class="artist-message" aria-live="polite"></div>
 
-        <div id="results" class="results"></div>
-      </section>
-    </main>
+        <div class="filter-grid compact-filters">
+          <label>
+            <span>Browse by year</span>
+            <select id="yearFilter">
+              <option value="all">All Years</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div id="results" class="results"></div>
+    </section>
   </div>
 </body>
 </html>
