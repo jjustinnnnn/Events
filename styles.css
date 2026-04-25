@@ -56,7 +56,7 @@ h1 {
   min-width: 170px;
   padding: 18px 20px;
   border-radius: 18px;
-  text-align: right;
+  text-align: center;
 }
 
 .hero-stat-label {
@@ -362,6 +362,47 @@ button:hover {
   margin-bottom: 18px;
 }
 
+.results-bar-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.sort-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--accent-soft);
+  border-radius: 10px;
+  padding: 3px;
+}
+
+.sort-btn {
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  height: auto;
+  width: auto;
+}
+
+.sort-btn:hover {
+  color: var(--text);
+  filter: none;
+  background: rgba(255,255,255,0.6);
+}
+
+.sort-btn.active {
+  background: #fff;
+  color: var(--accent);
+  box-shadow: 0 1px 4px rgba(26,36,74,0.08);
+}
+
 .results-count {
   color: var(--muted);
 }
@@ -388,14 +429,104 @@ button:hover {
   margin-bottom: 18px;
 }
 
-.compact-filters label {
-  width: 100%;
+/* ── Year Scrubber ── */
+.scrubber-section {
+  margin-top: 14px;
+  margin-bottom: 4px;
 }
 
-.compact-filters select {
-  width: 100%;
-  display: block;
+.scrubber-bar-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 64px;
+  padding: 0 2px;
 }
+
+.scrubber-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  height: 100%;
+  justify-content: flex-end;
+  cursor: pointer;
+}
+
+.scrubber-bar-wrap {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 56px;
+}
+
+.scrubber-bar {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  background: var(--accent);
+  opacity: 0.2;
+  transition: opacity 0.15s, background 0.15s;
+  min-height: 3px;
+}
+
+.scrubber-col:hover .scrubber-bar,
+.scrubber-col.active .scrubber-bar {
+  opacity: 1;
+}
+
+.scrubber-col.dimmed .scrubber-bar {
+  opacity: 0.1;
+}
+
+.scrubber-yr-label {
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 4px;
+  line-height: 1;
+  transform: rotate(-45deg);
+  transform-origin: top center;
+  white-space: nowrap;
+}
+
+.scrubber-col.active .scrubber-yr-label {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.scrubber-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.scrubber-active-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.scrubber-reset-btn {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--accent);
+  cursor: pointer;
+  height: auto;
+  width: auto;
+}
+
+.scrubber-reset-btn:hover {
+  background: var(--accent-soft);
+  filter: none;
+}
+/* ─────────────────── */
 
 label span {
   display: block;
@@ -416,6 +547,12 @@ select {
   border-radius: 20px;
   background: #fff;
   position: relative;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(26, 36, 74, 0.10);
 }
 
 .card-header {
