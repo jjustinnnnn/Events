@@ -14,7 +14,13 @@ const els = {
   carouselViewport: document.getElementById('carouselViewport'),
   carouselDots: document.getElementById('carouselDots'),
   carouselPrev: document.getElementById('carouselPrev'),
-  carouselNext: document.getElementById('carouselNext')
+  carouselNext: document.getElementById('carouselNext'),
+  highlightsPanel: document.getElementById('highlightsPanel'),
+  eventsPanel: document.getElementById('eventsPanel'),
+  toggleHighlights: document.getElementById('toggleHighlights'),
+  toggleEvents: document.getElementById('toggleEvents'),
+  toggleThumb: document.getElementById('toggleThumb'),
+  toggleTrack: document.querySelector('.view-toggle-track')
 };
 
 let rows = [];
@@ -421,6 +427,34 @@ function buildCarousel() {
   updateCarousel();
 }
 
+// ── View Toggle ──
+function setView(view) {
+  const showHighlights = view === 'highlights';
+
+  els.highlightsPanel.style.display = showHighlights ? '' : 'none';
+  els.eventsPanel.style.display = showHighlights ? 'none' : '';
+
+  els.toggleHighlights.classList.toggle('active', showHighlights);
+  els.toggleEvents.classList.toggle('active', !showHighlights);
+
+  if (els.toggleTrack) {
+    els.toggleTrack.classList.toggle('right', !showHighlights);
+  }
+}
+
+function buildToggle() {
+  if (!els.toggleHighlights || !els.toggleEvents || !els.toggleTrack) return;
+
+  els.toggleHighlights.addEventListener('click', () => setView('highlights'));
+  els.toggleEvents.addEventListener('click', () => setView('events'));
+
+  els.toggleTrack.addEventListener('click', () => {
+    const isHighlights = els.highlightsPanel.style.display !== 'none';
+    setView(isHighlights ? 'events' : 'highlights');
+  });
+}
+// ─────────────────
+
 function attachEvents() {
   [els.search, els.year].forEach(el =>
     el.addEventListener('input', () => {
@@ -467,6 +501,7 @@ async function main() {
   initFilters();
   buildFeatures();
   buildCarousel();
+  buildToggle();
   attachEvents();
   render();
   updateArtistMessage();
