@@ -359,9 +359,24 @@ function upcomingFeatureCard(r) {
   const daysAway = Math.round(diffMs / 86400000);
 
   let countdownText;
-  if (daysAway === 0) countdownText = 'Today';
-  else if (daysAway === 1) countdownText = 'Tomorrow';
-  else countdownText = `${daysAway} days away`;
+  if (daysAway === 0) {
+    countdownText = 'Today';
+  } else if (daysAway === 1) {
+    countdownText = 'Tomorrow';
+  } else if (daysAway < 14) {
+    countdownText = `${daysAway} days away`;
+  } else if (daysAway < 8) {
+    countdownText = `${daysAway} days away`;
+  } else if (daysAway < 60) {
+    const weeks = Math.round(daysAway / 7);
+    countdownText = `${weeks} ${weeks === 1 ? 'week' : 'weeks'} away`;
+  } else if (daysAway < 365) {
+    const months = Math.round(daysAway / 30.44);
+    countdownText = `${months} ${months === 1 ? 'month' : 'months'} away`;
+  } else {
+    const years = (daysAway / 365.25).toFixed(1).replace(/\.0$/, '');
+    countdownText = `${years} ${parseFloat(years) === 1 ? 'year' : 'years'} away`;
+  }
 
   return `
     <div class="small feature-row upcoming-row">
@@ -458,6 +473,12 @@ function buildFeatures() {
   renderPagedFeature(els.weekFeature, weekMatches, 'week', 'A quiet week historically. Time to fix that.');
   renderPagedFeatureUpcoming(els.upcomingFeature, upcomingMatches);
   bindFeatureButtons();
+
+  // If no day matches, default carousel to the week slide
+  if (dayMatches.length === 0 && weekMatches.length > 0) {
+    carouselIndex = 1;
+    updateCarousel();
+  }
 }
 
 function initFilters() {
