@@ -365,8 +365,6 @@ function upcomingFeatureCard(r) {
     countdownText = 'Tomorrow';
   } else if (daysAway < 14) {
     countdownText = `${daysAway} days away`;
-  } else if (daysAway < 8) {
-    countdownText = `${daysAway} days away`;
   } else if (daysAway < 60) {
     const weeks = Math.round(daysAway / 7);
     countdownText = `${weeks} ${weeks === 1 ? 'week' : 'weeks'} away`;
