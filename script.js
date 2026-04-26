@@ -9,11 +9,11 @@ const els = {
   weekFeature: document.getElementById('weekFeature'),
   upcomingFeature: document.getElementById('upcomingFeature'),
   artistMessage: document.getElementById('artistMessage'),
-  carouselTrack: document.getElementById('carouselTrack'),
-  carouselViewport: document.getElementById('carouselViewport'),
-  carouselDots: document.getElementById('carouselDots'),
-  carouselPrev: document.getElementById('carouselPrev'),
-  carouselNext: document.getElementById('carouselNext'),
+  carouselTrack: null,
+  carouselViewport: null,
+  carouselDots: null,
+  carouselPrev: null,
+  carouselNext: null,
   topArtistsList: document.getElementById('topArtistsList'),
   topVenuesList: document.getElementById('topVenuesList'),
   highlightsPanel: document.getElementById('highlightsPanel'),
@@ -30,8 +30,6 @@ let rows = [];
 let sortOrder = 'newest';
 let scrubberYear = null;
 let scrubberData = {}; // { year: count }
-let carouselIndex = 0;
-let carouselSlides = [];
 let featurePageState = {
   day: 0,
   week: 0,
@@ -472,10 +470,9 @@ function buildFeatures() {
   renderPagedFeatureUpcoming(els.upcomingFeature, upcomingMatches);
   bindFeatureButtons();
 
-  // If no day matches, default carousel to the week slide
+  // If no day matches, default to the week tab
   if (dayMatches.length === 0 && weekMatches.length > 0) {
-    carouselIndex = 1;
-    updateCarousel();
+    switchTab(1);
   }
 }
 
@@ -694,79 +691,22 @@ function bindDisclosureButtons() {
   });
 }
 
-function updateCarousel() {
-  if (!els.carouselTrack) return;
-  const slides = carouselSlides.length || 3;
-  carouselIndex = Math.max(0, Math.min(carouselIndex, slides - 1));
-  els.carouselTrack.style.transform = `translateX(-${carouselIndex * 100}%)`;
+let activeTab = 0;
 
-  if (els.carouselDots) {
-    [...els.carouselDots.querySelectorAll('.carousel-dot')].forEach((dot, i) => {
-      dot.classList.toggle('active', i === carouselIndex);
-      dot.setAttribute('aria-current', i === carouselIndex ? 'true' : 'false');
-    });
-  }
+function switchTab(index) {
+  activeTab = index;
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i === index);
+  });
+  document.querySelectorAll('.tab-pane').forEach((pane, i) => {
+    pane.classList.toggle('active', i === index);
+  });
 }
 
-function buildCarousel() {
-  carouselSlides = [...document.querySelectorAll('.carousel-slide')];
-
-  if (!els.carouselDots) return;
-
-  els.carouselDots.innerHTML = carouselSlides
-    .map((_, i) => `<button class="carousel-dot${i === 0 ? ' active' : ''}" type="button" aria-label="Go to feature ${i + 1}" data-index="${i}"></button>`)
-    .join('');
-
-  els.carouselDots.addEventListener('click', e => {
-    const btn = e.target.closest('.carousel-dot');
-    if (!btn) return;
-    carouselIndex = Number(btn.dataset.index);
-    updateCarousel();
+function buildTabs() {
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    btn.addEventListener('click', () => switchTab(i));
   });
-
-  els.carouselPrev?.addEventListener('click', () => {
-    carouselIndex = (carouselIndex - 1 + carouselSlides.length) % carouselSlides.length;
-    updateCarousel();
-  });
-
-  els.carouselNext?.addEventListener('click', () => {
-    carouselIndex = (carouselIndex + 1) % carouselSlides.length;
-    updateCarousel();
-  });
-
-  let startX = 0;
-  let currentX = 0;
-  let dragging = false;
-
-  if (els.carouselViewport) {
-    els.carouselViewport.addEventListener('touchstart', e => {
-      if (e.target.closest('.card-toggle') || e.target.closest('.see-more-btn') || e.target.closest('.carousel-btn') || e.target.closest('.carousel-dot')) return;
-      startX = e.touches[0].clientX;
-      dragging = true;
-    }, { passive: true });
-
-    els.carouselViewport.addEventListener('touchmove', e => {
-      if (!dragging) return;
-      currentX = e.touches[0].clientX;
-    }, { passive: true });
-
-    els.carouselViewport.addEventListener('touchend', () => {
-      if (!dragging) return;
-      const delta = currentX - startX;
-      if (Math.abs(delta) > 40) {
-        carouselIndex = delta > 0
-          ? (carouselIndex - 1 + carouselSlides.length) % carouselSlides.length
-          : (carouselIndex + 1) % carouselSlides.length;
-        updateCarousel();
-      }
-      dragging = false;
-      startX = 0;
-      currentX = 0;
-    });
-  }
-
-  window.addEventListener('resize', updateCarousel);
-  updateCarousel();
 }
 
 function setView(view) {
@@ -909,7 +849,7 @@ async function main() {
   buildScrubber();
   buildStats();
   buildFeatures();
-  buildCarousel();
+  buildTabs();
   buildToggle();
   attachEvents();
   render();
