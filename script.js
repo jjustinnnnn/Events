@@ -350,45 +350,67 @@ function featureCard(r) {
   `;
 }
 
-function upcomingFeatureCard(r) {
-  const today = startOfToday();
-  const showDay = startOfDay(r._date);
-  const diffMs = showDay.getTime() - today.getTime();
-  const daysAway = Math.round(diffMs / 86400000);
-
-  let countdownText;
-  if (daysAway === 0) {
-    countdownText = 'Today';
-  } else if (daysAway === 1) {
-    countdownText = 'Tomorrow';
-  } else if (daysAway < 14) {
-    countdownText = `${daysAway} days away`;
-  } else if (daysAway < 60) {
+function countdownText(daysAway) {
+  if (daysAway === 0) return 'Today';
+  if (daysAway === 1) return 'Tomorrow';
+  if (daysAway < 14) return `${daysAway} days away`;
+  if (daysAway < 60) {
     const weeks = Math.round(daysAway / 7);
-    countdownText = `${weeks} ${weeks === 1 ? 'week' : 'weeks'} away`;
-  } else if (daysAway < 365) {
-    const months = Math.round(daysAway / 30.44);
-    countdownText = `${months} ${months === 1 ? 'month' : 'months'} away`;
-  } else {
-    const years = (daysAway / 365.25).toFixed(1).replace(/\.0$/, '');
-    countdownText = `${years} ${parseFloat(years) === 1 ? 'year' : 'years'} away`;
+    return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} away`;
   }
+  if (daysAway < 365) {
+    const months = Math.round(daysAway / 30.44);
+    return `${months} ${months === 1 ? 'month' : 'months'} away`;
+  }
+  const years = (daysAway / 365.25).toFixed(1).replace(/\.0$/, '');
+  return `${years} ${parseFloat(years) === 1 ? 'year' : 'years'} away`;
+}
+
+function groupUpcoming(items) {
+  // Group by date + venue so multi-artist shows appear as one row
+  const groups = [];
+  const seen = {};
+  items.forEach(r => {
+    const key = norm(r.Date) + '|' + norm(r.Venue);
+    if (seen[key] !== undefined) {
+      groups[seen[key]].artists.push(norm(r.Artist));
+    } else {
+      seen[key] = groups.length;
+      groups.push({
+        _date: r._date,
+        Date: r.Date,
+        Venue: r.Venue,
+        Festival: r.Festival,
+        artists: [norm(r.Artist)]
+      });
+    }
+  });
+  return groups;
+}
+
+function upcomingFeatureCard(group) {
+  const today = startOfToday();
+  const showDay = startOfDay(group._date);
+  const daysAway = Math.round((showDay.getTime() - today.getTime()) / 86400000);
+  const badge = countdownText(daysAway);
+  const artistLine = group.artists.map(a => escapeHtml(a)).join(', ');
 
   return `
     <div class="small feature-row upcoming-row">
       <div class="feature-text">
-        <strong>${escapeHtml(r.Artist)}</strong>
-        <span class="countdown-badge">${escapeHtml(countdownText)}</span>
+        <strong>${artistLine}</strong>
+        <span class="countdown-badge">${escapeHtml(badge)}</span>
         <br>
-        ${escapeHtml(displayDate(r.Date))} · ${escapeHtml(r.Venue)}
-        ${norm(r.Festival) ? `<br><span class="badge" style="margin-top:6px">${escapeHtml(r.Festival)}</span>` : ''}
+        ${escapeHtml(displayDate(group.Date))} · ${escapeHtml(group.Venue)}
+        ${norm(group.Festival) ? `<br><span class="badge" style="margin-top:6px">${escapeHtml(group.Festival)}</span>` : ''}
       </div>
     </div>
   `;
 }
 
 function renderPagedFeatureUpcoming(el, items) {
-  const pages = getFeaturePages(items);
+  const grouped = groupUpcoming(items);
+  const pages = getFeaturePages(grouped);
   const pageIndex = featurePageState['upcoming'] || 0;
   const visible = pages[pageIndex] || [];
   const hasPrevious = pageIndex > 0;
