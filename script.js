@@ -187,33 +187,55 @@ function exactArtistCount(artist) {
 }
 
 function artistTimelineHtml(artist) {
-  const shows = rows
+  const past = rows
     .filter(r => norm(r.Artist) === norm(artist) && isPastOrToday(r.Date))
     .sort((a, b) => (parseFlexibleDate(a.Date)?.getTime() || 0) - (parseFlexibleDate(b.Date)?.getTime() || 0));
 
-  if (!shows.length) return '';
+  const upcoming = rows
+    .filter(r => norm(r.Artist) === norm(artist) && !isPastOrToday(r.Date))
+    .sort((a, b) => (parseFlexibleDate(a.Date)?.getTime() || 0) - (parseFlexibleDate(b.Date)?.getTime() || 0));
 
-  const items = shows.map((show, i) => {
-    const isLast = i === shows.length - 1;
+  const allShows = [...past, ...upcoming];
+  if (!allShows.length) return '';
+
+  const today = startOfToday();
+
+  const items = allShows.map((show, i) => {
+    const isUpcoming = !isPastOrToday(show.Date);
+    const isLast = i === allShows.length - 1;
     const setlistLink = norm(show.Setlist)
       ? ` · <a href="${escapeHtml(show.Setlist)}" target="_blank" rel="noreferrer">Setlist</a>`
       : '';
     const festivalTag = norm(show.Festival)
       ? ` <span class="tl-festival">${escapeHtml(show.Festival)}</span>`
       : '';
+
+    let countdownTag = '';
+    if (isUpcoming) {
+      const d = parseFlexibleDate(show.Date);
+      const daysAway = d ? Math.round((startOfDay(d).getTime() - today.getTime()) / 86400000) : 0;
+      countdownTag = `<span class="tl-countdown">${escapeHtml(countdownText(daysAway))}</span>`;
+    }
+
     return `
-      <li class="tl-item${isLast ? ' tl-item--last' : ''}">
-        <div class="tl-dot"></div>
+      <li class="tl-item${isLast ? ' tl-item--last' : ''}${isUpcoming ? ' tl-item--upcoming' : ''}">
+        <div class="tl-dot${isUpcoming ? ' tl-dot--upcoming' : ''}"></div>
         <div class="tl-body">
-          <span class="tl-date">${escapeHtml(displayDate(show.Date))}</span>
+          <span class="tl-date">${escapeHtml(displayDate(show.Date))}${countdownTag}</span>
           <span class="tl-venue">${escapeHtml(show.Venue)}${setlistLink}</span>
           ${festivalTag}
         </div>
       </li>`;
   }).join('');
 
+  const seenCount = past.length;
+  const upcomingCount = upcoming.length;
+  const headerText = seenCount === 0
+    ? `${upcomingCount} upcoming show${upcomingCount !== 1 ? 's' : ''}`
+    : `Seen ${seenCount} time${seenCount !== 1 ? 's' : ''}${upcomingCount > 0 ? ` · ${upcomingCount} upcoming` : ''}`;
+
   return `
-    <div class="tl-header">Seen ${shows.length} time${shows.length !== 1 ? 's' : ''}</div>
+    <div class="tl-header">${headerText}</div>
     <ul class="tl-list">${items}</ul>
   `;
 }
