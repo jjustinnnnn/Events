@@ -221,9 +221,8 @@ function artistTimelineHtml(artist) {
       <li class="tl-item${isLast ? ' tl-item--last' : ''}${isUpcoming ? ' tl-item--upcoming' : ''}">
         <div class="tl-dot${isUpcoming ? ' tl-dot--upcoming' : ''}"></div>
         <div class="tl-body">
-          <span class="tl-date">${escapeHtml(displayDate(show.Date))}${countdownTag}</span>
+          <span class="tl-date">${escapeHtml(displayDate(show.Date))}${countdownTag}${festivalTag}</span>
           <span class="tl-venue">${escapeHtml(show.Venue)}${setlistLink}</span>
-          ${festivalTag}
         </div>
       </li>`;
   }).join('');
@@ -359,14 +358,17 @@ function yearsAgoLabel(dateVal) {
 
 function featureCard(r) {
   const ago = yearsAgoLabel(r.Date);
+  const festivalBadge = norm(r.Festival)
+    ? `<span class="badge festival-inline">${escapeHtml(r.Festival)}</span>`
+    : '';
   return `
     <div class="small feature-row">
       <div class="feature-text">
         <strong>${escapeHtml(r.Artist)}</strong>
         ${ago ? `<span class="ago-badge">${escapeHtml(ago)}</span>` : ''}
+        ${festivalBadge}
         <br>
         ${escapeHtml(displayDate(r.Date))} · ${escapeHtml(r.Venue)}
-        ${norm(r.Festival) ? `<br><span class="badge" style="margin-top:6px">${escapeHtml(r.Festival)}</span>` : ''}
       </div>
     </div>
   `;

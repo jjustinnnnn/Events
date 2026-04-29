@@ -732,7 +732,7 @@ select {
 .tl-dot--upcoming {
   background: #fff;
   border-color: #f59e0b;
-  border-style: dashed;
+  border-style: solid;
 }
 
 .tl-item--upcoming .tl-date {
@@ -838,6 +838,13 @@ select {
   color: var(--accent);
   font-size: 12px;
   font-weight: 700;
+}
+
+.festival-inline {
+  margin-left: 4px;
+  vertical-align: middle;
+  font-size: 11px;
+  padding: 1px 8px;
 }
 
 @media (max-width: 860px) {
