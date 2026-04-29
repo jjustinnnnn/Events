@@ -186,25 +186,6 @@ function exactArtistCount(artist) {
   return rows.filter(r => norm(r.Artist) === target && isPastOrToday(r.Date)).length;
 }
 
-function ordinal(n) {
-  const s = ['th', 'st', 'nd', 'rd'];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
-}
-
-function nthTimeSeeing(artist, dateVal) {
-  const target = norm(artist);
-  const thisDate = parseFlexibleDate(dateVal)?.getTime();
-  if (!thisDate) return null;
-
-  const past = rows
-    .filter(r => norm(r.Artist) === target && isPastOrToday(r.Date))
-    .sort((a, b) => (parseFlexibleDate(a.Date)?.getTime() || 0) - (parseFlexibleDate(b.Date)?.getTime() || 0));
-
-  const idx = past.findIndex(r => parseFlexibleDate(r.Date)?.getTime() === thisDate);
-  return idx === -1 ? null : idx + 1;
-}
-
 function artistTimelineHtml(artist) {
   const past = rows
     .filter(r => norm(r.Artist) === norm(artist) && isPastOrToday(r.Date))
@@ -268,15 +249,13 @@ function cardHtml(r, index, isDeduped = false) {
   const timeline = artistTimelineHtml(r.Artist);
   const showCount = exactArtistCount(r.Artist);
   const hasTimeline = showCount > 1;
-  const nth = !isDeduped && showCount > 1 ? nthTimeSeeing(r.Artist, r.Date) : null;
-  const nthLabel = nth ? `<span class="nth-time">${ordinal(nth)} time seeing them</span>` : '';
 
   // Deduped artist card: show count instead of single date, omit venue/note/setlist
   const headerContent = isDeduped
     ? `<div class="card-date">${showCount} shows · most recently ${escapeHtml(displayDate(r.Date))}</div>
        <h3>${escapeHtml(r.Artist)}</h3>
        <p>${escapeHtml(r.Venue)}</p>`
-    : `<div class="card-date">${escapeHtml(displayDate(r.Date))}${nthLabel}</div>
+    : `<div class="card-date">${escapeHtml(displayDate(r.Date))}</div>
        <h3>${escapeHtml(r.Artist)}</h3>
        <p>${escapeHtml(r.Venue)}</p>
        ${note}
