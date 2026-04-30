@@ -188,11 +188,19 @@ function exactArtistCount(artist) {
 
 function artistTimelineHtml(artist) {
   const past = rows
-    .filter(r => norm(r.Artist) === norm(artist) && isPastOrToday(r.Date))
+    .filter(r => {
+      if (norm(r.Artist) !== norm(artist)) return false;
+      const d = parseFlexibleDate(r.Date);
+      return d && startOfDay(d).getTime() < startOfToday().getTime();
+    })
     .sort((a, b) => (parseFlexibleDate(a.Date)?.getTime() || 0) - (parseFlexibleDate(b.Date)?.getTime() || 0));
 
   const upcoming = rows
-    .filter(r => norm(r.Artist) === norm(artist) && !isPastOrToday(r.Date))
+    .filter(r => {
+      if (norm(r.Artist) !== norm(artist)) return false;
+      const d = parseFlexibleDate(r.Date);
+      return d && startOfDay(d).getTime() >= startOfToday().getTime();
+    })
     .sort((a, b) => (parseFlexibleDate(a.Date)?.getTime() || 0) - (parseFlexibleDate(b.Date)?.getTime() || 0));
 
   const allShows = [...past, ...upcoming];
@@ -508,7 +516,7 @@ function buildFeatures() {
 
   const upcomingMatches = rows
     .map(r => ({ ...r, _date: parseFlexibleDate(r.Date) }))
-    .filter(r => r._date && startOfDay(r._date).getTime() > today.getTime())
+    .filter(r => r._date && startOfDay(r._date).getTime() >= today.getTime())
     .sort((a, b) => a._date - b._date);
 
   renderPagedFeature(els.dayFeature, dayMatches, 'day', 'No shows on this date — yet. Go make a memory.');
