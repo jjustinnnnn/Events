@@ -364,19 +364,45 @@ function yearsAgoLabel(dateVal) {
   return diff === 1 ? '1 year ago' : `${diff} years ago`;
 }
 
-function featureCard(r) {
-  const ago = yearsAgoLabel(r.Date);
-  const festivalBadge = norm(r.Festival)
-    ? `<span class="badge festival-inline">${escapeHtml(r.Festival)}</span>`
+function groupFeatureItems(items) {
+  const groups = [];
+  const seen = {};
+  items.forEach(r => {
+    const key = norm(r.Date) + '|' + norm(r.Venue);
+    if (seen[key] !== undefined) {
+      groups[seen[key]].artists.push(norm(r.Artist));
+    } else {
+      seen[key] = groups.length;
+      groups.push({
+        Date: r.Date,
+        Venue: r.Venue,
+        Festival: r.Festival,
+        artists: [norm(r.Artist)]
+      });
+    }
+  });
+  return groups;
+}
+
+function featureCard(group) {
+  const ago = yearsAgoLabel(group.Date);
+  const festivalBadge = norm(group.Festival)
+    ? `<span class="badge festival-inline">${escapeHtml(group.Festival)}</span>`
     : '';
+  const artistLines = group.artists
+    .map(a => `<div class="feature-artist">${escapeHtml(a)}</div>`)
+    .join('');
+
   return `
     <div class="small feature-row">
       <div class="feature-text">
-        <strong>${escapeHtml(r.Artist)}</strong>
-        ${ago ? `<span class="ago-badge">${escapeHtml(ago)}</span>` : ''}
-        ${festivalBadge}
-        <br>
-        ${escapeHtml(displayDate(r.Date))} · ${escapeHtml(r.Venue)}
+        <div class="feature-top-line">
+          ${escapeHtml(displayDate(group.Date))}
+          ${ago ? `<span class="ago-badge">${escapeHtml(ago)}</span>` : ''}
+          ${festivalBadge}
+        </div>
+        <div class="feature-venue">${escapeHtml(group.Venue)}</div>
+        ${artistLines}
       </div>
     </div>
   `;
@@ -425,16 +451,23 @@ function upcomingFeatureCard(group) {
   const showDay = startOfDay(group._date);
   const daysAway = Math.round((showDay.getTime() - today.getTime()) / 86400000);
   const badge = countdownText(daysAway);
-  const artistLine = group.artists.map(a => escapeHtml(a)).join(', ');
+  const festivalBadge = norm(group.Festival)
+    ? `<span class="badge festival-inline">${escapeHtml(group.Festival)}</span>`
+    : '';
+  const artistLines = group.artists
+    .map(a => `<div class="feature-artist">${escapeHtml(a)}</div>`)
+    .join('');
 
   return `
     <div class="small feature-row upcoming-row">
       <div class="feature-text">
-        <strong>${artistLine}</strong>
-        <span class="countdown-badge">${escapeHtml(badge)}</span>
-        <br>
-        ${escapeHtml(displayDate(group.Date))} · ${escapeHtml(group.Venue)}
-        ${norm(group.Festival) ? `<br><span class="badge" style="margin-top:6px">${escapeHtml(group.Festival)}</span>` : ''}
+        <div class="feature-top-line">
+          ${escapeHtml(displayDate(group.Date))}
+          <span class="countdown-badge">${escapeHtml(badge)}</span>
+          ${festivalBadge}
+        </div>
+        <div class="feature-venue">${escapeHtml(group.Venue)}</div>
+        ${artistLines}
       </div>
     </div>
   `;
@@ -467,7 +500,8 @@ function getFeaturePages(items) {
 }
 
 function renderPagedFeature(el, items, key, emptyText) {
-  const pages = getFeaturePages(items);
+  const grouped = groupFeatureItems(items);
+  const pages = getFeaturePages(grouped);
   const pageIndex = featurePageState[key] || 0;
   const visible = pages[pageIndex] || [];
   const hasPrevious = pageIndex > 0;
