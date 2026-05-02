@@ -186,6 +186,29 @@ function exactArtistCount(artist) {
   return rows.filter(r => norm(r.Artist) === target && isPastOrToday(r.Date)).length;
 }
 
+function ordinal(n) {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+const MILESTONES = new Set([1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]);
+
+function isMilestone(n) {
+  return MILESTONES.has(n) || (n > 100 && n % 5 === 0);
+}
+
+function nthTimeSeeing(artist, dateVal) {
+  const target = norm(artist);
+  const thisDate = parseFlexibleDate(dateVal)?.getTime();
+  if (!thisDate) return null;
+  const past = rows
+    .filter(r => norm(r.Artist) === target && isPastOrToday(r.Date))
+    .sort((a, b) => (parseFlexibleDate(a.Date)?.getTime() || 0) - (parseFlexibleDate(b.Date)?.getTime() || 0));
+  const idx = past.findIndex(r => parseFlexibleDate(r.Date)?.getTime() === thisDate);
+  return idx === -1 ? null : idx + 1;
+}
+
 function artistTimelineHtml(artist) {
   const past = rows
     .filter(r => {
@@ -249,15 +272,41 @@ function artistTimelineHtml(artist) {
 
 function cardHtml(r, index, isDeduped = false) {
   const detailsId = `details-${index}`;
+  const eyeId = `eye-${index}`;
+  const pillId = `pill-${index}`;
   const setlist = norm(r.Setlist)
     ? `<a href="${escapeHtml(r.Setlist)}" target="_blank" rel="noreferrer">Setlist.fm</a>`
     : '';
   const note = norm(r.Note) ? `<p>${escapeHtml(r.Note)}</p>` : '';
   const timeline = artistTimelineHtml(r.Artist);
   const showCount = exactArtistCount(r.Artist);
-  const hasTimeline = showCount > 1;
 
-  // Deduped artist card: show count instead of single date, omit venue/note/setlist
+  // Nth time — show for all non-deduped cards
+  let nthSlot = '';
+  if (!isDeduped) {
+    const nth = nthTimeSeeing(r.Artist, r.Date);
+    if (nth !== null) {
+      const label = `${ordinal(nth)} show`;
+      if (isMilestone(nth)) {
+        nthSlot = `<div class="nth-slot"><span class="milestone-pill">${escapeHtml(label)}</span></div>`;
+      } else {
+        nthSlot = `
+          <div class="nth-slot">
+            <button type="button" class="ctrl-btn" id="${eyeId}"
+              aria-label="Show visit number"
+              onclick="document.getElementById('${eyeId}').style.display='none';document.getElementById('${pillId}').classList.add('visible');">
+              &#128065;
+            </button>
+            <span class="nth-pill" id="${pillId}"
+              onclick="document.getElementById('${pillId}').classList.remove('visible');document.getElementById('${eyeId}').style.display='inline-flex';">
+              ${escapeHtml(label)}
+            </span>
+          </div>`;
+      }
+    }
+  }
+
+  // Deduped artist card
   const headerContent = isDeduped
     ? `<div class="card-date">${showCount} shows · most recently ${escapeHtml(displayDate(r.Date))}</div>
        <h3>${escapeHtml(r.Artist)}</h3>
@@ -274,23 +323,22 @@ function cardHtml(r, index, isDeduped = false) {
         <div class="card-main">
           ${headerContent}
         </div>
-        ${hasTimeline ? `
-        <button
-          type="button"
-          class="card-toggle"
-          aria-expanded="false"
-          aria-controls="${detailsId}"
-          aria-label="Show all shows for ${escapeHtml(r.Artist)}"
-        >
-          <span class="chev">⌄</span>
-        </button>` : ''}
+        <div class="card-controls">
+          <button
+            type="button"
+            class="ctrl-btn"
+            aria-expanded="false"
+            aria-controls="${detailsId}"
+            aria-label="Show timeline for ${escapeHtml(r.Artist)}"
+          >⌄</button>
+          ${nthSlot}
+        </div>
       </div>
-      ${hasTimeline ? `
       <div class="details-panel" id="${detailsId}" hidden>
         <div class="details-content">
           ${timeline}
         </div>
-      </div>` : ''}
+      </div>
     </article>
   `;
 }
@@ -762,15 +810,14 @@ function bindFeatureButtons() {
 }
 
 function bindDisclosureButtons() {
-  document.querySelectorAll('.card-toggle').forEach(btn => {
+  document.querySelectorAll('.ctrl-btn[aria-controls]').forEach(btn => {
     btn.onclick = e => {
       e.preventDefault();
       e.stopPropagation();
-
       const panel = document.getElementById(btn.getAttribute('aria-controls'));
       const open = btn.getAttribute('aria-expanded') === 'true';
-
       btn.setAttribute('aria-expanded', String(!open));
+      btn.style.transform = !open ? 'rotate(180deg)' : 'rotate(0deg)';
       if (panel) {
         panel.hidden = open;
         panel.classList.toggle('open', !open);
@@ -841,15 +888,14 @@ function attachEvents() {
   });
 
   document.addEventListener('click', e => {
-    const btn = e.target.closest('.card-toggle');
+    const btn = e.target.closest('.ctrl-btn[aria-controls]');
     if (!btn) return;
     e.preventDefault();
     e.stopPropagation();
-
     const panel = document.getElementById(btn.getAttribute('aria-controls'));
     const open = btn.getAttribute('aria-expanded') === 'true';
-
     btn.setAttribute('aria-expanded', String(!open));
+    btn.style.transform = !open ? 'rotate(180deg)' : 'rotate(0deg)';
     if (panel) {
       panel.hidden = open;
       panel.classList.toggle('open', !open);
