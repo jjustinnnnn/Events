@@ -820,6 +820,22 @@ function bindDisclosureButtons() {
         panel.hidden = open;
         panel.classList.toggle('open', !open);
       }
+
+      // Show nth pill when expanding, hide when collapsing
+      const slot = btn.closest('.card-controls')?.querySelector('.nth-slot');
+      if (slot) {
+        const eyeBtn = slot.querySelector('.ctrl-btn');
+        const pill = slot.querySelector('.nth-pill');
+        if (eyeBtn && pill) {
+          if (!open) {
+            eyeBtn.style.display = 'none';
+            pill.classList.add('visible');
+          } else {
+            eyeBtn.style.display = 'inline-flex';
+            pill.classList.remove('visible');
+          }
+        }
+      }
     };
   });
 }
@@ -897,6 +913,22 @@ function attachEvents() {
     if (panel) {
       panel.hidden = open;
       panel.classList.toggle('open', !open);
+    }
+
+    // Show nth pill when expanding, hide when collapsing
+    const slot = btn.closest('.card-controls')?.querySelector('.nth-slot');
+    if (slot) {
+      const eyeBtn = slot.querySelector('.ctrl-btn');
+      const pill = slot.querySelector('.nth-pill');
+      if (eyeBtn && pill) {
+        if (!open) {
+          eyeBtn.style.display = 'none';
+          pill.classList.add('visible');
+        } else {
+          eyeBtn.style.display = 'inline-flex';
+          pill.classList.remove('visible');
+        }
+      }
     }
   });
 }
