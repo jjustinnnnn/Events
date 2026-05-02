@@ -270,7 +270,6 @@ function artistTimelineHtml(artist) {
 
 function cardHtml(r, index, isDeduped = false) {
   const detailsId = `details-${index}`;
-  const eyeId = `eye-${index}`;
   const pillId = `pill-${index}`;
   const setlist = norm(r.Setlist)
     ? `<a href="${escapeHtml(r.Setlist)}" target="_blank" rel="noreferrer">Setlist.fm</a>`
@@ -279,27 +278,16 @@ function cardHtml(r, index, isDeduped = false) {
   const timeline = artistTimelineHtml(r.Artist);
   const showCount = exactArtistCount(r.Artist);
 
-  // Nth time — show for all non-deduped cards
-  let nthSlot = '';
+  // Nth label — hidden by default, revealed when timeline expands
+  let nthLabel = '';
   if (!isDeduped) {
     const nth = nthTimeSeeing(r.Artist, r.Date);
     if (nth !== null) {
       const label = `${ordinal(nth)} show`;
       if (isMilestone(nth)) {
-        nthSlot = `<div class="nth-slot"><span class="milestone-pill">${escapeHtml(label)}</span></div>`;
+        nthLabel = `<span class="milestone-pill" id="${pillId}">${escapeHtml(label)}</span>`;
       } else {
-        nthSlot = `
-          <div class="nth-slot">
-            <button type="button" class="ctrl-btn" id="${eyeId}"
-              aria-label="Show visit number"
-              onclick="document.getElementById('${eyeId}').style.display='none';document.getElementById('${pillId}').classList.add('visible');">
-              &#128065;
-            </button>
-            <span class="nth-pill" id="${pillId}"
-              onclick="document.getElementById('${pillId}').classList.remove('visible');document.getElementById('${eyeId}').style.display='inline-flex';">
-              ${escapeHtml(label)}
-            </span>
-          </div>`;
+        nthLabel = `<span class="nth-pill" id="${pillId}">${escapeHtml(label)}</span>`;
       }
     }
   }
@@ -329,7 +317,7 @@ function cardHtml(r, index, isDeduped = false) {
             aria-controls="${detailsId}"
             aria-label="Show timeline for ${escapeHtml(r.Artist)}"
           >⌄</button>
-          ${nthSlot}
+          ${nthLabel ? `<div class="nth-slot">${nthLabel}</div>` : ''}
         </div>
       </div>
       <div class="details-panel" id="${detailsId}" hidden>
@@ -822,20 +810,8 @@ function bindDisclosureButtons() {
       }
 
       // Show nth pill when expanding, hide when collapsing
-      const slot = btn.closest('.card-controls')?.querySelector('.nth-slot');
-      if (slot) {
-        const eyeBtn = slot.querySelector('.ctrl-btn');
-        const pill = slot.querySelector('.nth-pill');
-        if (eyeBtn && pill) {
-          if (!open) {
-            eyeBtn.style.display = 'none';
-            pill.classList.add('visible');
-          } else {
-            eyeBtn.style.display = 'inline-flex';
-            pill.classList.remove('visible');
-          }
-        }
-      }
+      const pill = btn.closest('.card-controls')?.querySelector('.nth-pill, .milestone-pill');
+      if (pill) pill.classList.toggle('visible', !open);
     };
   });
 }
@@ -916,20 +892,8 @@ function attachEvents() {
     }
 
     // Show nth pill when expanding, hide when collapsing
-    const slot = btn.closest('.card-controls')?.querySelector('.nth-slot');
-    if (slot) {
-      const eyeBtn = slot.querySelector('.ctrl-btn');
-      const pill = slot.querySelector('.nth-pill');
-      if (eyeBtn && pill) {
-        if (!open) {
-          eyeBtn.style.display = 'none';
-          pill.classList.add('visible');
-        } else {
-          eyeBtn.style.display = 'inline-flex';
-          pill.classList.remove('visible');
-        }
-      }
-    }
+    const pill = btn.closest('.card-controls')?.querySelector('.nth-pill, .milestone-pill');
+    if (pill) pill.classList.toggle('visible', !open);
   });
 }
 
