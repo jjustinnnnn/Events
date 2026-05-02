@@ -301,6 +301,27 @@ button:hover {
   gap: 0;
 }
 
+.feature-top-line {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.feature-venue {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+
+.feature-artist {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
 .feature-row {
   padding: 8px 0;
   border-bottom: 1px solid rgba(220,226,238,0.7);
