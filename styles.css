@@ -547,15 +547,13 @@ select {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
-  width: 30px;
 }
 
 .ctrl-btn {
-  width: 30px;
-  height: 30px;
-  min-width: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: 1px solid var(--line);
   background: #fff;
@@ -565,7 +563,7 @@ select {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1;
   box-sizing: border-box;
   transition: background 0.15s, transform 0.2s ease;
@@ -578,24 +576,11 @@ select {
 }
 
 .nth-slot {
-  width: 30px;
-  height: 30px;
-  position: relative;
-  flex-shrink: 0;
-}
-
-.nth-slot .ctrl-btn {
-  position: absolute;
-  inset: 0;
-  width: 30px;
-  height: 30px;
+  display: flex;
+  justify-content: center;
 }
 
 .nth-pill {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
   font-size: 11px;
   font-weight: 700;
   color: var(--accent);
@@ -603,7 +588,6 @@ select {
   border-radius: 999px;
   padding: 1px 8px;
   display: none;
-  cursor: pointer;
   white-space: nowrap;
 }
 
@@ -612,11 +596,7 @@ select {
 }
 
 .milestone-pill {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  display: inline-block;
+  display: none;
   font-size: 11px;
   font-weight: 700;
   color: #92400e;
@@ -624,6 +604,10 @@ select {
   border-radius: 999px;
   padding: 1px 8px;
   white-space: nowrap;
+}
+
+.milestone-pill.visible {
+  display: inline-block;
 }
 
 .details-panel[hidden] {
