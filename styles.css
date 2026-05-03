@@ -227,10 +227,15 @@ button:hover {
 .artist-message {
   margin-top: 12px;
   min-height: 24px;
-  color: var(--accent);
+  color: var(--muted);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.4;
+}
+
+.artist-message strong {
+  color: var(--accent);
+  font-weight: 700;
 }
 
 /* ── Tabs ── */
