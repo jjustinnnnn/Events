@@ -1021,7 +1021,20 @@ function attachEvents() {
 
 async function main() {
   const response = await fetch(CSV_PATH);
+  const lastModified = response.headers.get('Last-Modified');
   const text = await response.text();
+
+  // Set last synced timestamp
+  const syncEl = document.getElementById('lastSynced');
+  if (syncEl) {
+    const syncDate = lastModified ? new Date(lastModified) : new Date();
+    const formatted = syncDate.toLocaleDateString('en-US', {
+      month: 'long', day: 'numeric', year: 'numeric'
+    }) + ' at ' + syncDate.toLocaleTimeString('en-US', {
+      hour: 'numeric', minute: '2-digit', hour12: true
+    });
+    syncEl.textContent = `Last updated ${formatted}`;
+  }
 
   rows = Papa.parse(text, { header: true, skipEmptyLines: true }).data;
   rows = rows.filter(r => norm(r.Date) && norm(r.Artist) && lower(r.Type) !== 'broadway');
