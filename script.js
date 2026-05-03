@@ -367,27 +367,40 @@ function updateArtistMessage() {
     return;
   }
 
-  const matches = rows.filter(
-    r => isPastOrToday(r.Date) && lower(r.Artist).includes(query)
-  );
+  const past = rows.filter(r => isPastOrToday(r.Date));
 
-  if (!matches.length) {
-    els.artistMessage.textContent = "Hmm...don't think you've seen them yet! Bummer...";
+  // ── Artist match (priority) ──────────────────────
+  const artistMatches = past.filter(r => lower(r.Artist).includes(query));
+  if (artistMatches.length) {
+    artistMatches.sort((a, b) =>
+      (parseFlexibleDate(a.Date)?.getTime() || 0) - (parseFlexibleDate(b.Date)?.getTime() || 0)
+    );
+    const first = artistMatches[0];
+    const last = artistMatches[artistMatches.length - 1];
+    const count = artistMatches.length;
+    const firstDate = parseFlexibleDate(first.Date);
+    const lastDate = parseFlexibleDate(last.Date);
+    const fmt = d => d ? d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '';
+
+    els.artistMessage.textContent =
+      `You've seen ${last.Artist} ${count} time${count !== 1 ? 's' : ''} · last at ${last.Venue}, ${fmt(lastDate)} · first at ${first.Venue}, ${fmt(firstDate)}`;
     return;
   }
 
-  matches.sort(
-    (a, b) =>
-      (parseFlexibleDate(b.Date)?.getTime() || 0) -
-      (parseFlexibleDate(a.Date)?.getTime() || 0)
-  );
+  // ── Venue match ──────────────────────────────────
+  const venueMatches = past.filter(r => lower(r.Venue).includes(query) && !norm(r.Festival));
+  if (venueMatches.length) {
+    // Dedupe by date so multi-artist nights count as one visit
+    const uniqueDays = new Set(venueMatches.map(r => norm(r.Venue) + '|' + norm(r.Date)));
+    const count = uniqueDays.size;
+    const venueName = venueMatches[0].Venue;
+    els.artistMessage.textContent =
+      `You've been to ${venueName} ${count} time${count !== 1 ? 's' : ''}.`;
+    return;
+  }
 
-  const latest = matches[0];
-  const count = matches.length;
-  const countText = count === 1 ? 'once' : `${count} times`;
-
-  els.artistMessage.textContent =
-    `You've seen ${latest.Artist} ${countText}! The last time was on ${displayDate(latest.Date)} at ${latest.Venue}.`;
+  // ── No match ─────────────────────────────────────
+  els.artistMessage.textContent = "Doesn't look like that's in your archive yet.";
 }
 
 function yearsAgoLabel(dateVal) {
