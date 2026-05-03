@@ -363,7 +363,7 @@ function updateArtistMessage() {
   const query = lower(els.search.value);
 
   if (!query) {
-    els.artistMessage.textContent = '';
+    els.artistMessage.innerHTML = '';
     return;
   }
 
@@ -382,25 +382,24 @@ function updateArtistMessage() {
     const lastDate = parseFlexibleDate(last.Date);
     const fmt = d => d ? d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '';
 
-    els.artistMessage.textContent =
-      `You've seen ${last.Artist} ${count} time${count !== 1 ? 's' : ''} · last at ${last.Venue}, ${fmt(lastDate)} · first at ${first.Venue}, ${fmt(firstDate)}`;
+    els.artistMessage.innerHTML =
+      `<strong>You've seen ${escapeHtml(last.Artist)} ${count} time${count !== 1 ? 's' : ''}</strong> · last time at ${escapeHtml(last.Venue)}, ${fmt(lastDate)} · first time at ${escapeHtml(first.Venue)}, ${fmt(firstDate)}`;
     return;
   }
 
   // ── Venue match ──────────────────────────────────
   const venueMatches = past.filter(r => lower(r.Venue).includes(query) && !norm(r.Festival));
   if (venueMatches.length) {
-    // Dedupe by date so multi-artist nights count as one visit
     const uniqueDays = new Set(venueMatches.map(r => norm(r.Venue) + '|' + norm(r.Date)));
     const count = uniqueDays.size;
     const venueName = venueMatches[0].Venue;
-    els.artistMessage.textContent =
-      `You've been to ${venueName} ${count} time${count !== 1 ? 's' : ''}.`;
+    els.artistMessage.innerHTML =
+      `<strong>You've been to ${escapeHtml(venueName)} ${count} time${count !== 1 ? 's' : ''}.</strong>`;
     return;
   }
 
   // ── No match ─────────────────────────────────────
-  els.artistMessage.textContent = "Doesn't look like that's in your archive yet.";
+  els.artistMessage.innerHTML = `<strong>Doesn't look like that's in your archive yet.</strong>`;
 }
 
 function yearsAgoLabel(dateVal) {
