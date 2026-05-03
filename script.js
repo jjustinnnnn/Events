@@ -139,9 +139,10 @@ function getFiltered() {
 
 // When a search query matches rows that are predominantly one artist,
 // collapse them into a single artist card showing the timeline.
-// Non-artist matches (venue, note, year) stay as individual cards.
+// When the query matches a venue, collapse into a single venue card.
+// Non-artist/venue matches stay as individual cards.
 function getDisplayRows(filtered, query) {
-  if (!query) return { rows: filtered, dedupedArtists: new Set() };
+  if (!query) return { rows: filtered, dedupedArtists: new Set(), dedupedVenues: new Set() };
 
   const byArtist = {};
   filtered.forEach(r => {
@@ -150,15 +151,25 @@ function getDisplayRows(filtered, query) {
     byArtist[a].push(r);
   });
 
+  // Check if query is primarily a venue match
+  const venueMatches = filtered.filter(r => lower(r.Venue).includes(query) && !norm(r.Festival));
+  const byVenue = {};
+  venueMatches.forEach(r => {
+    const v = norm(r.Venue);
+    if (!byVenue[v]) byVenue[v] = [];
+    byVenue[v].push(r);
+  });
+
   const dedupedArtists = new Set();
+  const dedupedVenues = new Set();
   const displayRows = [];
   const seen = new Set();
 
+  // First pass — artist dedup
   filtered.forEach(r => {
     const a = norm(r.Artist);
     const artistRows = byArtist[a];
 
-    // Artist name matches the query and they have multiple shows → one card
     if (lower(r.Artist).includes(query) && artistRows.length > 1) {
       if (!seen.has(a)) {
         seen.add(a);
@@ -169,7 +180,6 @@ function getDisplayRows(filtered, query) {
         displayRows.push(sorted[0]);
       }
     } else {
-      // Non-artist match (venue, note, etc.) — individual cards, no dedup
       const key = a + '|' + norm(r.Date);
       if (!seen.has(key)) {
         seen.add(key);
@@ -178,12 +188,109 @@ function getDisplayRows(filtered, query) {
     }
   });
 
-  return { rows: displayRows, dedupedArtists };
+  // Second pass — if no artist dedup happened and venue matches exist, replace with venue cards
+  if (dedupedArtists.size === 0 && Object.keys(byVenue).length > 0) {
+    displayRows.length = 0;
+    Object.entries(byVenue).forEach(([venueKey, venueRows]) => {
+      dedupedVenues.add(venueKey);
+      // Use most recent row as representative, attach all rows
+      const sorted = [...venueRows].sort(
+        (x, y) => (parseFlexibleDate(y.Date)?.getTime() || 0) - (parseFlexibleDate(x.Date)?.getTime() || 0)
+      );
+      const rep = { ...sorted[0], _venueRows: venueRows };
+      displayRows.push(rep);
+    });
+  }
+
+  return { rows: displayRows, dedupedArtists, dedupedVenues };
 }
 
 function exactArtistCount(artist) {
   const target = norm(artist);
   return rows.filter(r => norm(r.Artist) === target && isPastOrToday(r.Date)).length;
+}
+
+function venueTimelineHtml(venueRows) {
+  // Group by date, sort newest first
+  const byDate = {};
+  venueRows.forEach(r => {
+    const key = norm(r.Date);
+    if (!byDate[key]) byDate[key] = { Date: r.Date, artists: [] };
+    byDate[key].artists.push(norm(r.Artist));
+  });
+
+  const visits = Object.values(byDate).sort(
+    (a, b) => (parseFlexibleDate(b.Date)?.getTime() || 0) - (parseFlexibleDate(a.Date)?.getTime() || 0)
+  );
+
+  const items = visits.map((v, i) => {
+    const isLast = i === visits.length - 1;
+    const artistLine = v.artists.map(escapeHtml).join(' · ');
+    return `
+      <div class="tl-item${isLast ? ' tl-item--last' : ''}">
+        <div class="tl-dot"></div>
+        <div class="tl-body">
+          <span class="tl-date">${escapeHtml(displayDate(v.Date))}</span>
+          <span class="tl-venue">${artistLine}</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="tl-header">Visit history</div>
+    <ul class="tl-list">${items}</ul>
+  `;
+}
+
+function venueCardHtml(r, index) {
+  const detailsId = `details-${index}`;
+  const venueRows = r._venueRows || [r];
+  const venueName = norm(r.Venue);
+
+  // Unique visit days
+  const uniqueDays = [...new Set(venueRows.map(v => norm(v.Date)))];
+  const visitCount = uniqueDays.length;
+
+  // Unique artists
+  const uniqueArtists = new Set(venueRows.map(v => norm(v.Artist))).size;
+
+  // Date range
+  const dates = venueRows
+    .map(v => parseFlexibleDate(v.Date))
+    .filter(Boolean)
+    .sort((a, b) => a - b);
+  const firstDate = dates[0];
+  const lastDate = dates[dates.length - 1];
+  const fmt = d => d ? d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '';
+  const dateRange = firstDate && lastDate ? `${fmt(firstDate)} – ${fmt(lastDate)}` : '';
+
+  const timeline = venueTimelineHtml(venueRows);
+
+  return `
+    <article class="card" data-venue="${escapeHtml(venueName)}">
+      <div class="card-header">
+        <div class="card-main">
+          <div class="card-date">${visitCount} visit${visitCount !== 1 ? 's' : ''} · ${escapeHtml(dateRange)}</div>
+          <h3>${escapeHtml(r.Venue)}</h3>
+          <p>${uniqueArtists} artist${uniqueArtists !== 1 ? 's' : ''}</p>
+        </div>
+        <div class="card-controls">
+          <button
+            type="button"
+            class="ctrl-btn"
+            aria-expanded="false"
+            aria-controls="${detailsId}"
+            aria-label="Show visit history for ${escapeHtml(r.Venue)}"
+          >⌄</button>
+        </div>
+      </div>
+      <div class="details-panel" id="${detailsId}" hidden>
+        <div class="details-content">
+          ${timeline}
+        </div>
+      </div>
+    </article>
+  `;
 }
 
 function ordinal(n) {
@@ -347,10 +454,13 @@ function render() {
   const filtered = getFiltered();
   const sorted = sortRows(filtered);
   const query = lower(els.search.value);
-  const { rows: displayRows, dedupedArtists } = getDisplayRows(sorted, query);
+  const { rows: displayRows, dedupedArtists, dedupedVenues } = getDisplayRows(sorted, query);
 
   els.results.innerHTML = displayRows.length
-    ? displayRows.map((r, i) => cardHtml(r, i, dedupedArtists.has(norm(r.Artist)))).join('')
+    ? displayRows.map((r, i) => {
+        if (dedupedVenues.has(norm(r.Venue))) return venueCardHtml(r, i);
+        return cardHtml(r, i, dedupedArtists.has(norm(r.Artist)));
+      }).join('')
     : '<div class="empty">No events matched your search.</div>';
 
   const isFiltered = query || scrubberYear;
