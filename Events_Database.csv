@@ -31,7 +31,7 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 01/02/2026,Broadway - Bug,Samuel J. Friedman Theatre,,,,Broadway
 12/22/2025,Jonas Brothers,Barclays Center,,,,Concert
 12/20/2025,The New York Pops,Carnegie Hall,A Place Called Home,,,Concert
-12/02/2025,Portugal The Man.,Music Hall of Williamsburg,,,,Concert
+12/02/2025,Portugal. The Man,Music Hall of Williamsburg,,,,Concert
 11/15/2025,Broadway - Two Strangers Carry A Cake Across New York,Longacre Theatre,,,,Broadway
 11/05/2025,Broadway - Rob Lake Magic with special guests The Muppets,Broadhurst Theatre,,,,Broadway
 10/31/2025,Florence and the Machine,Pioneer Works,,,,Concert
@@ -136,7 +136,7 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 07/17/2024,Glass Animals,Elsewhere,,,,Concert
 07/16/2024,Noah Kahan,Madison Square Garden,,,,Concert
 07/10/2024,Tegan and Sara,Red Rocks Amphitheater,,,,Concert
-07/10/2024,Portugal The Man,Red Rocks Amphitheater,,,,Concert
+07/10/2024,Portugal. The Man,Red Rocks Amphitheater,,,,Concert
 07/01/2024,LA LOM,Central Park Summerstage,,,,Concert
 07/01/2024,Madison Cunningham,Central Park Summerstage,,,,Concert
 06/12/2024,Allie X,Racket,,,,Concert
@@ -428,17 +428,18 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 06/01/2018,Future Generations,City Winery,,,,Concert
 06/01/2018,Sir Sly,City Winery,,,,Concert
 05/31/2018,The Gaslight Anthem,Bowery Ballroom,59 Sound Anniversary,https://www.setlist.fm/setlist/the-gaslight-anthem/2018/bowery-ballroom-new-york-ny-13ed7925.html,,Concert
-05/27/2018,Cameron Esposito,Harvard Athletic Complex,,,Boston Calling Festival,Concert
-05/27/2018,David Cross,Harvard Athletic Complex,,,Boston Calling Festival,Concert
-05/27/2018,Eminem,Harvard Athletic Complex,,,Boston Calling Festival,Concert
-05/27/2018,Fleet Foxes,Harvard Athletic Complex,,,Boston Calling Festival,Concert
-05/25/2018,Paramore,Harvard Athletic Complex,,,Boston Calling Festival,Concert
-05/25/2018,Portugal. The Man,Harvard Athletic Complex,,,Boston Calling Festival,Concert
-05/25/2018,The Killers,Harvard Athletic Complex,,,Boston Calling Festival,Concert
+05/27/2018,Cameron Esposito,Harvard Athletic Complex,,,Boston Calling,Concert
+05/27/2018,David Cross,Harvard Athletic Complex,,,Boston Calling,Concert
+05/27/2018,Eminem,Harvard Athletic Complex,,,Boston Calling,Concert
+05/27/2018,Fleet Foxes,Harvard Athletic Complex,,,Boston Calling,Concert
+05/25/2018,Paramore,Harvard Athletic Complex,,,Boston Calling,Concert
+05/25/2018,Portugal. The Man,Harvard Athletic Complex,,,Boston Calling,Concert
+05/25/2018,The Killers,Harvard Athletic Complex,,,Boston Calling,Concert
 05/23/2018,The Kooks,Brooklyn Steel,,,,Concert
 05/21/2018,CHVRCHES,Elsewhere,,,,Concert
 05/11/2018,J.S. Ondara,Ludlow House,,,,Concert
-05/07/2018,The Naked and Famous,Sunfest Festival,,,,Concert
+05/07/2017,The Naked and Famous,Intracoastal Waterway - West Palm Beach,,,Sunfest,Concert
+05/07/20217,Blink-182,Intracoastal Waterway - West Palm Beach,,,Sunfest,Concert
 05/06/2018,Haim,Radio City Music Hall,,,,Concert
 05/06/2018,Lizzo,Radio City Music Hall,,,,Concert
 05/02/2018,Middle Kids,Public Arts,Spotify Fan First Secret Show,,,Concert
@@ -550,15 +551,15 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 06/06/2017,Cage The Elephant,iHeart Radio,Acoustic Performance for Unpeeled,,,Concert
 06/06/2017,Portugal. The Man,Terminal 5,,,,Concert
 06/03/2017,Phoenix,Randall's Island Park,,,Governors Ball,Concert
-05/28/2017,Cage The Elephant,Harvard Athletic Complex,,,Boston Calling Festival,Concert
-05/28/2017,Weezer,Harvard Athletic Complex,,https://www.setlist.fm/setlist/weezer/2017/harvard-athletic-complex-boston-ma-53e73775.html,Boston Calling Festival,Concert
-05/27/2017,Oh Wonder,Harvard Athletic Complex,,,Boston Calling Festival,Concert
-05/27/2017,Tegan And Sara,Harvard Athletic Complex,,,Boston Calling Festival,Concert
-05/27/2017,Tkay Maidza,Harvard Athletic Complex,,,Boston Calling Festival,Concert
-05/26/2017,Mumford & Sons,Harvard Athletic Complex,,,Boston Calling Festival,Concert
+05/28/2017,Cage The Elephant,Harvard Athletic Complex,,,Boston Calling,Concert
+05/28/2017,Weezer,Harvard Athletic Complex,,https://www.setlist.fm/setlist/weezer/2017/harvard-athletic-complex-boston-ma-53e73775.html,Boston Calling,Concert
+05/27/2017,Oh Wonder,Harvard Athletic Complex,,,Boston Calling,Concert
+05/27/2017,Tegan And Sara,Harvard Athletic Complex,,,Boston Calling,Concert
+05/27/2017,Tkay Maidza,Harvard Athletic Complex,,,Boston Calling,Concert
+05/26/2017,Mumford & Sons,Harvard Athletic Complex,,,Boston Calling,Concert
 05/17/2017,A R I Z O N A,Gibson Room,Spotify Album Release Party,,,Concert
 05/17/2017,Empire The Sun,Terminal 5,,,,Concert
-05/03/2017,Weezer,Sunfest,,https://www.setlist.fm/setlist/weezer/2017/west-palm-beach-waterfront-west-palm-beach-fl-53e65f5d.html,,Concert
+05/03/2017,Weezer,Intracoastal Waterway - West Palm Beach,,https://www.setlist.fm/setlist/weezer/2017/west-palm-beach-waterfront-west-palm-beach-fl-53e65f5d.html,Sunfest,Concert
 05/02/2017,Misterwives,Webster Hall,Album release party - Connect The Dots Tour,,,Concert
 04/26/2017,The New Pornographers,Terminal 5,,,,Concert
 04/25/2017,Shura,Bowery Ballroom,,,,Concert
@@ -717,17 +718,18 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 08/17/2010,MGMT,Radio City Music Hall,,,,Concert
 08/05/2010,The Gaslight Anthem,The Stone Pony,,,,Concert
 06/30/2010,Passion Pit,Colonels' Row - Governors Island,,,,Concert
-05/02/2010,Weezer,Bamboozle Festival,,https://www.setlist.fm/setlist/weezer/2010/meadowlands-sports-complex-east-rutherford-nj-63d4eadb.html,,Concert
+05/02/2010,Weezer,Meadowlands Sports Complex,,https://www.setlist.fm/setlist/weezer/2010/meadowlands-sports-complex-east-rutherford-nj-63d4eadb.html,Bamboozle,Concert
+05/02/2010,MGMT,Meadowlands Sports Complex,,,Bamboozle,
 05/01/2010,Weezer,Borgata,,,,Concert
 02/20/2010,New Found Glory,Starland Ballroom,Hit or Miss 10th Anniversary Show,,,Concert
-09/30/2009,Bruce Springsteen,Giants Staidum,"Last show Giants Stadium, Born To Run Night?",,,Concert
+09/30/2009,Bruce Springsteen,Giants Staidum,"Last show Giants Stadium, Born To Run Night",,,Concert
 08/26/2009,Blink-182,PNC Bank Arts Center,Opener: Weezer,,,Concert
 08/26/2009,Weezer,PNC Bank Arts Center,Opening for: Blink-182,,,Concert
 04/03/2009,Brand New,Ramapo College,Bradley Center,,,Concert
 11/16/2008,Big D and the Kids Table,Starland Ballroom,Skanksgiving,,,Concert
 11/16/2008,Bomb The Music Industry!,Starland Ballroom,Skanksgiving,,,Concert
 11/16/2008,Mustard Plug,Starland Ballroom,Skanksgiving,,,Concert
-11/16/2008,Ska Is Dead,Starland Ballroom,,,,Concert
+11/16/2008,Ska Is Dead,Starland Ballroom,Skanksgiving,,,Concert
 11/16/2008,Westbound Train,Starland Ballroom,Skanksgiving,,,Concert
 09/27/2008,Ratatat,Terminal 5,,,,Concert
 09/24/2008,Angels and Airwaves,Madison Square Garden,,,,Concert
@@ -746,8 +748,9 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 09/15/2007,The Arrogant Sons of Bitches,Knitting Factory,Farewell Show - confirm date,,,Concert
 09/11/2007,The Used,House of Blues - Atlantic City,,,,Concert
 07/15/2007,Reel Big Fish,Starland Ballroom,Opener: Awful Waffle,,,Concert
+07/15/2007,Awful Waffle,Starland Ballroom,,,,Concert
 07/11/2007,Against Me!,Vintage Vinyl,New Wave - Signing,,,Concert
-03/02/2007,Against Me!,Starland Ballroom,Tom Gabel,,,Concert
+03/02/2007,Against Me!,Starland Ballroom,,,,Concert
 03/02/2007,Fake Problems,Starland Ballroom,,,,Concert
 12/28/2006,Bomb The Music Industry!,School of Rock,,,,Concert
 10/13/2006,The Bouncing Souls,Starland Ballroom,,,,Concert
@@ -757,7 +760,7 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 03/04/2006,The Planet Smashers,The Bloomfield Ave Cafe,,,,Concert
 03/04/2006,The Specs,The Bloomfield Ave Cafe,,,,Concert
 12/30/2005,The Bouncing Souls,Starland Ballroom,Home for the Holidays,,,Concert
-12/06/2005,Against Me!,Asbury Lanes,Tom Gabel,,,Concert
+12/06/2005,Against Me!,Asbury Lanes,,,,Concert
 11/10/2005,Dropkick Murphy's,Starland Ballroom,,,,Concert
 10/08/2005,Streetlight Manifesto,Starland Ballroom,,,,Concert
 08/14/2005,Vans Warped Tour,Old Bridge Raceway Park,,,Warped Tour,Concert
