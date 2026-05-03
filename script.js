@@ -401,7 +401,7 @@ function cardHtml(r, index, isDeduped = false) {
 
   // Deduped artist card
   const headerContent = isDeduped
-    ? `<div class="card-date">${showCount} shows · most recently ${escapeHtml(displayDate(r.Date))}</div>
+    ? `<div class="card-date">${showCount} shows<br>most recently ${escapeHtml(displayDate(r.Date))}</div>
        <h3>${escapeHtml(r.Artist)}</h3>
        <p>${escapeHtml(r.Venue)}</p>`
     : `<div class="card-date">${escapeHtml(displayDate(r.Date))}</div>
