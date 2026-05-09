@@ -509,14 +509,14 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 09/22/2017,Dua Lipa,Madison Square Garden,Opening for: Bruno Mars,,,Concert
 09/20/2017,Tove Stryke,Lazzoni Modern Furniture,Sofar Sounds,,,Concert
 09/19/2017,The Killers,Brooklyn Steel,SiriusXM - Wonderful Wonderful event,,,Concert
-09/16/2017,Foster The People,Meadows Festival,,,,Concert
-09/16/2017,Red Hot Chili Peppers,Meadows Festival,,,,Concert
-09/16/2017,Weezer,Meadows Festival,,,,Concert
+09/16/2017,Foster The People,Citi Field,,,Meadows,Concert
+09/16/2017,Red Hot Chili Peppers,Citi Field,,,Meadows,Concert
+09/16/2017,Weezer,Citi Field,,,Meadows,Concert
 09/15/2017,Middle Kids,Music Hall Of Williamsburg,,,,Concert
-09/14/2017,Jay-Z,Meadows Festival,,,,Concert
-09/14/2017,Milky Chance,Meadows Festival,,,,Concert
-09/14/2017,Tegan And Sara,Meadows Festival,,,,Concert
-09/14/2017,Two Door Cinema Club,Meadows Festival,,,,Concert
+09/14/2017,Jay-Z,Citi Field,,,Meadows,Concert
+09/14/2017,Milky Chance,Citi Field,,,Meadows,Concert
+09/14/2017,Tegan And Sara,Citi Field,,,Meadows,Concert
+09/14/2017,Two Door Cinema Club,Citi Field,,,Meadows,Concert
 09/13/2017,Cold War Kids,Summerstage,Opening for: Young The Giant,,,Concert
 09/13/2017,Young The Giant,Summerstage,Opener: Cold War Kids,,,Concert
 09/12/2017,Arcade Fire,Madison Square Garden,,,,Concert
@@ -529,8 +529,8 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 08/02/2017,Fleet Foxes,Prospect Park Bandshell,BRIC Celebrate Brooklyn!,,,Concert
 08/01/2017,London Grammar,Brooklyn Steel,,,,Concert
 07/30/2017,Fleetwood Mac,Citi Field,Classic East,,,Concert
-07/30/2017,Glass Animals,Randall's Island,Panorama,,,Concert
-07/29/2017,Alt-J,Panorama,Festival,,,Concert
+07/30/2017,Glass Animals,Randall's Island Park,,,Panorama,Concert
+07/29/2017,Alt-J,Randall's Island Park,,,Panorama,Concert
 07/27/2017,Regina Spektor,SummerStage,,,,Concert
 07/15/2017,The Naked and Famous,Pier 36,Tour de Fat New York,,,Concert
 07/11/2017,New Politics,Hammerstein Ballroom,,,,Concert
@@ -719,7 +719,7 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 08/05/2010,The Gaslight Anthem,The Stone Pony,,,,Concert
 06/30/2010,Passion Pit,Colonels' Row - Governors Island,,,,Concert
 05/02/2010,Weezer,Meadowlands Sports Complex,,https://www.setlist.fm/setlist/weezer/2010/meadowlands-sports-complex-east-rutherford-nj-63d4eadb.html,Bamboozle,Concert
-05/02/2010,MGMT,Meadowlands Sports Complex,,,Bamboozle,
+05/02/2010,MGMT,Meadowlands Sports Complex,,,Bamboozle,Concert
 05/01/2010,Weezer,Borgata,,,,Concert
 02/20/2010,New Found Glory,Starland Ballroom,Hit or Miss 10th Anniversary Show,,,Concert
 09/30/2009,Bruce Springsteen,Giants Staidum,"Last show Giants Stadium, Born To Run Night",,,Concert
@@ -765,7 +765,9 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 10/08/2005,Streetlight Manifesto,Starland Ballroom,,,,Concert
 08/14/2005,Vans Warped Tour,Old Bridge Raceway Park,,,Warped Tour,Concert
 08/14/2005,My Chemical Romance,Old Bridge Raceway Park,,,Warped Tour,Concert
-07/02/2005,Sounds of the Underground,Starland Ballroom,,,Sounds of the Underground,Concert
+07/23/2005,Sounds of the Underground,Starland Ballroom,,,Sounds of the Underground,Concert
+07/23/2005,GWAR,Starland Ballroom,,,Sounds of the Underground,Concert
+10/15/2006,GWAR,Starland Ballroom,,,,Concert
 06/29/2005,Catch 22,Knitting Factory,,,,Concert
 06/03/2005,Mustard Plug,The Bloomfield Ave Cafe,,,,Concert
 05/06/2005,Goldfinger,Starland Ballroom,,,,Concert
@@ -779,3 +781,6 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 03/19/2026,BENEE,Irving Plaza,,,,Concert
 03/13/2026,Más Trauma,Baker Falls,,,,Concert
 03/13/2026,Fallow Days,Baker Falls,,,,Concert
+12/28/2006,Catch-22,School of Rock,,,,Concert
+12/28/2006,Patent Pending,School of Rock,,,,Concert
+12/28/2006,Whole Wheat Bread,School of Rock,,,,Concert
