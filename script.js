@@ -139,9 +139,10 @@ function getFiltered() {
 
 // When a search query matches rows that are predominantly one artist,
 // collapse them into a single artist card showing the timeline.
-// Non-artist matches (venue, note, year) stay as individual cards.
+// When the query matches a venue, collapse into a single venue card.
+// Non-artist/venue matches stay as individual cards.
 function getDisplayRows(filtered, query) {
-  if (!query) return { rows: filtered, dedupedArtists: new Set() };
+  if (!query) return { rows: filtered, dedupedArtists: new Set(), dedupedVenues: new Set() };
 
   const byArtist = {};
   filtered.forEach(r => {
@@ -150,15 +151,25 @@ function getDisplayRows(filtered, query) {
     byArtist[a].push(r);
   });
 
+  // Check if query is primarily a venue match
+  const venueMatches = filtered.filter(r => lower(r.Venue).includes(query) && !norm(r.Festival));
+  const byVenue = {};
+  venueMatches.forEach(r => {
+    const v = norm(r.Venue);
+    if (!byVenue[v]) byVenue[v] = [];
+    byVenue[v].push(r);
+  });
+
   const dedupedArtists = new Set();
+  const dedupedVenues = new Set();
   const displayRows = [];
   const seen = new Set();
 
+  // First pass — artist dedup
   filtered.forEach(r => {
     const a = norm(r.Artist);
     const artistRows = byArtist[a];
 
-    // Artist name matches the query and they have multiple shows → one card
     if (lower(r.Artist).includes(query) && artistRows.length > 1) {
       if (!seen.has(a)) {
         seen.add(a);
@@ -169,7 +180,6 @@ function getDisplayRows(filtered, query) {
         displayRows.push(sorted[0]);
       }
     } else {
-      // Non-artist match (venue, note, etc.) — individual cards, no dedup
       const key = a + '|' + norm(r.Date);
       if (!seen.has(key)) {
         seen.add(key);
@@ -178,27 +188,138 @@ function getDisplayRows(filtered, query) {
     }
   });
 
-  return { rows: displayRows, dedupedArtists };
+  // Second pass — if no artist dedup happened and venue matches exist, replace with venue cards
+  if (dedupedArtists.size === 0 && Object.keys(byVenue).length > 0) {
+    displayRows.length = 0;
+    Object.entries(byVenue).forEach(([venueKey, venueRows]) => {
+      dedupedVenues.add(venueKey);
+      // Use most recent row as representative, attach all rows
+      const sorted = [...venueRows].sort(
+        (x, y) => (parseFlexibleDate(y.Date)?.getTime() || 0) - (parseFlexibleDate(x.Date)?.getTime() || 0)
+      );
+      const rep = { ...sorted[0], _venueRows: venueRows };
+      displayRows.push(rep);
+    });
+  }
+
+  return { rows: displayRows, dedupedArtists, dedupedVenues };
 }
 
 function exactArtistCount(artist) {
   const target = norm(artist);
-  const today = startOfToday();
-  return rows.filter(r => {
-    if (norm(r.Artist) !== target) return false;
-    const d = parseFlexibleDate(r.Date);
-    return d && startOfDay(d).getTime() < today.getTime();
-  }).length;
+  return rows.filter(r => norm(r.Artist) === target && isPastOrToday(r.Date)).length;
+}
+
+function venueTimelineHtml(venueRows) {
+  // Group by date, sort newest first
+  const byDate = {};
+  venueRows.forEach(r => {
+    const key = norm(r.Date);
+    if (!byDate[key]) byDate[key] = { Date: r.Date, artists: [] };
+    byDate[key].artists.push(norm(r.Artist));
+  });
+
+  const visits = Object.values(byDate).sort(
+    (a, b) => (parseFlexibleDate(b.Date)?.getTime() || 0) - (parseFlexibleDate(a.Date)?.getTime() || 0)
+  );
+
+  const items = visits.map((v, i) => {
+    const isLast = i === visits.length - 1;
+    const artistLine = v.artists.map(escapeHtml).join(' · ');
+    return `
+      <div class="tl-item${isLast ? ' tl-item--last' : ''}">
+        <div class="tl-dot"></div>
+        <div class="tl-body">
+          <span class="tl-date">${escapeHtml(displayDate(v.Date))}</span>
+          <span class="tl-venue">${artistLine}</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="tl-header">Visit history</div>
+    <ul class="tl-list">${items}</ul>
+  `;
+}
+
+function venueCardHtml(r, index) {
+  const detailsId = `details-${index}`;
+  const venueRows = r._venueRows || [r];
+  const venueName = norm(r.Venue);
+
+  // Unique visit days
+  const uniqueDays = [...new Set(venueRows.map(v => norm(v.Date)))];
+  const visitCount = uniqueDays.length;
+
+  // Unique artists
+  const uniqueArtists = new Set(venueRows.map(v => norm(v.Artist))).size;
+
+  // Date range
+  const dates = venueRows
+    .map(v => parseFlexibleDate(v.Date))
+    .filter(Boolean)
+    .sort((a, b) => a - b);
+  const firstDate = dates[0];
+  const lastDate = dates[dates.length - 1];
+  const fmt = d => d ? d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '';
+  const dateRange = firstDate && lastDate ? `${fmt(firstDate)} – ${fmt(lastDate)}` : '';
+
+  const timeline = venueTimelineHtml(venueRows);
+
+  return `
+    <article class="card" data-venue="${escapeHtml(venueName)}">
+      <div class="card-header">
+        <div class="card-main">
+          <div class="card-date">${visitCount} visit${visitCount !== 1 ? 's' : ''} · ${escapeHtml(dateRange)}</div>
+          <h3>${escapeHtml(r.Venue)}</h3>
+          <p>${uniqueArtists} artist${uniqueArtists !== 1 ? 's' : ''}</p>
+        </div>
+        <div class="card-controls">
+          <button
+            type="button"
+            class="ctrl-btn"
+            aria-expanded="false"
+            aria-controls="${detailsId}"
+            aria-label="Show visit history for ${escapeHtml(r.Venue)}"
+          >⌄</button>
+        </div>
+      </div>
+      <div class="details-panel" id="${detailsId}" hidden>
+        <div class="details-content">
+          ${timeline}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function ordinal(n) {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+function isMilestone(n) {
+  return n >= 10 && n % 5 === 0;
+}
+
+function nthTimeSeeing(artist, dateVal) {
+  const target = norm(artist);
+  const thisDate = parseFlexibleDate(dateVal)?.getTime();
+  if (!thisDate) return null;
+  const past = rows
+    .filter(r => norm(r.Artist) === target && isPastOrToday(r.Date))
+    .sort((a, b) => (parseFlexibleDate(a.Date)?.getTime() || 0) - (parseFlexibleDate(b.Date)?.getTime() || 0));
+  const idx = past.findIndex(r => parseFlexibleDate(r.Date)?.getTime() === thisDate);
+  return idx === -1 ? null : idx + 1;
 }
 
 function artistTimelineHtml(artist) {
-  const today = startOfToday();
-
   const past = rows
     .filter(r => {
       if (norm(r.Artist) !== norm(artist)) return false;
       const d = parseFlexibleDate(r.Date);
-      return d && startOfDay(d).getTime() < today.getTime();
+      return d && startOfDay(d).getTime() < startOfToday().getTime();
     })
     .sort((a, b) => (parseFlexibleDate(a.Date)?.getTime() || 0) - (parseFlexibleDate(b.Date)?.getTime() || 0));
 
@@ -206,20 +327,18 @@ function artistTimelineHtml(artist) {
     .filter(r => {
       if (norm(r.Artist) !== norm(artist)) return false;
       const d = parseFlexibleDate(r.Date);
-      return d && startOfDay(d).getTime() >= today.getTime();
+      return d && startOfDay(d).getTime() >= startOfToday().getTime();
     })
     .sort((a, b) => (parseFlexibleDate(a.Date)?.getTime() || 0) - (parseFlexibleDate(b.Date)?.getTime() || 0));
 
   const allShows = [...past, ...upcoming];
   if (!allShows.length) return '';
 
-  const items = allShows.map((show, i) => {
-    const d = parseFlexibleDate(show.Date);
-    const showDay = d ? startOfDay(d).getTime() : null;
-    const isToday = showDay === today.getTime();
-    const isUpcoming = showDay !== null && showDay >= today.getTime();
-    const isLast = i === allShows.length - 1;
+  const today = startOfToday();
 
+  const items = allShows.map((show, i) => {
+    const isUpcoming = !isPastOrToday(show.Date);
+    const isLast = i === allShows.length - 1;
     const setlistLink = norm(show.Setlist)
       ? ` · <a href="${escapeHtml(show.Setlist)}" target="_blank" rel="noreferrer">Setlist</a>`
       : '';
@@ -229,9 +348,9 @@ function artistTimelineHtml(artist) {
 
     let countdownTag = '';
     if (isUpcoming) {
+      const d = parseFlexibleDate(show.Date);
       const daysAway = d ? Math.round((startOfDay(d).getTime() - today.getTime()) / 86400000) : 0;
-      const label = isToday ? 'Today' : countdownText(daysAway);
-      countdownTag = `<span class="tl-countdown">${escapeHtml(label)}</span>`;
+      countdownTag = `<span class="tl-countdown">${escapeHtml(countdownText(daysAway))}</span>`;
     }
 
     return `
@@ -246,20 +365,9 @@ function artistTimelineHtml(artist) {
 
   const seenCount = past.length;
   const upcomingCount = upcoming.length;
-  const todayCount = upcoming.filter(r => {
-    const d = parseFlexibleDate(r.Date);
-    return d && startOfDay(d).getTime() === today.getTime();
-  }).length;
-
-  let headerText;
-  if (seenCount === 0 && upcomingCount > 0) {
-    headerText = `${upcomingCount} upcoming show${upcomingCount !== 1 ? 's' : ''}`;
-  } else {
-    const upcomingLabel = upcomingCount > 0
-      ? ` · ${todayCount > 0 ? 'Show tonight' : `${upcomingCount} upcoming`}`
-      : '';
-    headerText = `Seen ${seenCount} time${seenCount !== 1 ? 's' : ''}${upcomingLabel}`;
-  }
+  const headerText = seenCount === 0
+    ? `${upcomingCount} upcoming show${upcomingCount !== 1 ? 's' : ''}`
+    : `Seen ${seenCount} time${seenCount !== 1 ? 's' : ''}${upcomingCount > 0 ? ` · ${upcomingCount} upcoming` : ''}`;
 
   return `
     <div class="tl-header">${headerText}</div>
@@ -269,17 +377,31 @@ function artistTimelineHtml(artist) {
 
 function cardHtml(r, index, isDeduped = false) {
   const detailsId = `details-${index}`;
+  const pillId = `pill-${index}`;
   const setlist = norm(r.Setlist)
     ? `<a href="${escapeHtml(r.Setlist)}" target="_blank" rel="noreferrer">Setlist.fm</a>`
     : '';
   const note = norm(r.Note) ? `<p>${escapeHtml(r.Note)}</p>` : '';
   const timeline = artistTimelineHtml(r.Artist);
   const showCount = exactArtistCount(r.Artist);
-  const hasTimeline = showCount > 1;
 
-  // Deduped artist card: show count instead of single date, omit venue/note/setlist
+  // Nth label — hidden by default, revealed when timeline expands
+  let nthLabel = '';
+  if (!isDeduped) {
+    const nth = nthTimeSeeing(r.Artist, r.Date);
+    if (nth !== null) {
+      const label = `${ordinal(nth)} show`;
+      if (isMilestone(nth)) {
+        nthLabel = `<span class="milestone-pill" id="${pillId}">${escapeHtml(label)}</span>`;
+      } else {
+        nthLabel = `<span class="nth-pill" id="${pillId}">${escapeHtml(label)}</span>`;
+      }
+    }
+  }
+
+  // Deduped artist card
   const headerContent = isDeduped
-    ? `<div class="card-date">${showCount} shows · most recently ${escapeHtml(displayDate(r.Date))}</div>
+    ? `<div class="card-date">most recently ${escapeHtml(displayDate(r.Date))}</div>
        <h3>${escapeHtml(r.Artist)}</h3>
        <p>${escapeHtml(r.Venue)}</p>`
     : `<div class="card-date">${escapeHtml(displayDate(r.Date))}</div>
@@ -294,23 +416,22 @@ function cardHtml(r, index, isDeduped = false) {
         <div class="card-main">
           ${headerContent}
         </div>
-        ${hasTimeline ? `
-        <button
-          type="button"
-          class="card-toggle"
-          aria-expanded="false"
-          aria-controls="${detailsId}"
-          aria-label="Show all shows for ${escapeHtml(r.Artist)}"
-        >
-          <span class="chev">⌄</span>
-        </button>` : ''}
+        <div class="card-controls">
+          <button
+            type="button"
+            class="ctrl-btn"
+            aria-expanded="false"
+            aria-controls="${detailsId}"
+            aria-label="Show timeline for ${escapeHtml(r.Artist)}"
+          >⌄</button>
+          ${nthLabel ? `<div class="nth-slot">${nthLabel}</div>` : ''}
+        </div>
       </div>
-      ${hasTimeline ? `
       <div class="details-panel" id="${detailsId}" hidden>
         <div class="details-content">
           ${timeline}
         </div>
-      </div>` : ''}
+      </div>
     </article>
   `;
 }
@@ -333,10 +454,13 @@ function render() {
   const filtered = getFiltered();
   const sorted = sortRows(filtered);
   const query = lower(els.search.value);
-  const { rows: displayRows, dedupedArtists } = getDisplayRows(sorted, query);
+  const { rows: displayRows, dedupedArtists, dedupedVenues } = getDisplayRows(sorted, query);
 
   els.results.innerHTML = displayRows.length
-    ? displayRows.map((r, i) => cardHtml(r, i, dedupedArtists.has(norm(r.Artist)))).join('')
+    ? displayRows.map((r, i) => {
+        if (dedupedVenues.has(norm(r.Venue))) return venueCardHtml(r, i);
+        return cardHtml(r, i, dedupedArtists.has(norm(r.Artist)));
+      }).join('')
     : '<div class="empty">No events matched your search.</div>';
 
   const isFiltered = query || scrubberYear;
@@ -349,31 +473,43 @@ function updateArtistMessage() {
   const query = lower(els.search.value);
 
   if (!query) {
-    els.artistMessage.textContent = '';
+    els.artistMessage.innerHTML = '';
     return;
   }
 
-  const matches = rows.filter(
-    r => isPastOrToday(r.Date) && lower(r.Artist).includes(query)
-  );
+  const past = rows.filter(r => isPastOrToday(r.Date));
 
-  if (!matches.length) {
-    els.artistMessage.textContent = "Hmm...don't think you've seen them yet! Bummer...";
+  // ── Artist match (priority) ──────────────────────
+  const artistMatches = past.filter(r => lower(r.Artist).includes(query));
+  if (artistMatches.length) {
+    artistMatches.sort((a, b) =>
+      (parseFlexibleDate(a.Date)?.getTime() || 0) - (parseFlexibleDate(b.Date)?.getTime() || 0)
+    );
+    const first = artistMatches[0];
+    const last = artistMatches[artistMatches.length - 1];
+    const count = artistMatches.length;
+    const firstDate = parseFlexibleDate(first.Date);
+    const lastDate = parseFlexibleDate(last.Date);
+    const fmt = d => d ? d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '';
+
+    els.artistMessage.innerHTML =
+      `<strong>You've seen ${escapeHtml(last.Artist)} ${count} time${count !== 1 ? 's' : ''}</strong> · last time at ${escapeHtml(last.Venue)}, ${fmt(lastDate)} · first time at ${escapeHtml(first.Venue)}, ${fmt(firstDate)}`;
     return;
   }
 
-  matches.sort(
-    (a, b) =>
-      (parseFlexibleDate(b.Date)?.getTime() || 0) -
-      (parseFlexibleDate(a.Date)?.getTime() || 0)
-  );
+  // ── Venue match ──────────────────────────────────
+  const venueMatches = past.filter(r => lower(r.Venue).includes(query) && !norm(r.Festival));
+  if (venueMatches.length) {
+    const uniqueDays = new Set(venueMatches.map(r => norm(r.Venue) + '|' + norm(r.Date)));
+    const count = uniqueDays.size;
+    const venueName = venueMatches[0].Venue;
+    els.artistMessage.innerHTML =
+      `<strong>You've been to ${escapeHtml(venueName)} ${count} time${count !== 1 ? 's' : ''}.</strong>`;
+    return;
+  }
 
-  const latest = matches[0];
-  const count = matches.length;
-  const countText = count === 1 ? 'once' : `${count} times`;
-
-  els.artistMessage.textContent =
-    `You've seen ${latest.Artist} ${countText}! The last time was on ${displayDate(latest.Date)} at ${latest.Venue}.`;
+  // ── No match ─────────────────────────────────────
+  els.artistMessage.innerHTML = `<strong>Doesn't look like that's in your archive yet.</strong>`;
 }
 
 function yearsAgoLabel(dateVal) {
@@ -384,16 +520,45 @@ function yearsAgoLabel(dateVal) {
   return diff === 1 ? '1 year ago' : `${diff} years ago`;
 }
 
-function featureCard(r) {
-  const ago = yearsAgoLabel(r.Date);
+function groupFeatureItems(items) {
+  const groups = [];
+  const seen = {};
+  items.forEach(r => {
+    const key = norm(r.Date) + '|' + norm(r.Venue);
+    if (seen[key] !== undefined) {
+      groups[seen[key]].artists.push(norm(r.Artist));
+    } else {
+      seen[key] = groups.length;
+      groups.push({
+        Date: r.Date,
+        Venue: r.Venue,
+        Festival: r.Festival,
+        artists: [norm(r.Artist)]
+      });
+    }
+  });
+  return groups;
+}
+
+function featureCard(group) {
+  const ago = yearsAgoLabel(group.Date);
+  const festivalBadge = norm(group.Festival)
+    ? `<span class="badge festival-inline">${escapeHtml(group.Festival)}</span>`
+    : '';
+  const artistLines = group.artists
+    .map(a => `<div class="feature-artist">${escapeHtml(a)}</div>`)
+    .join('');
+
   return `
     <div class="small feature-row">
       <div class="feature-text">
-        <strong>${escapeHtml(r.Artist)}</strong>
-        ${ago ? `<span class="ago-badge">${escapeHtml(ago)}</span>` : ''}
-        <br>
-        ${escapeHtml(displayDate(r.Date))} · ${escapeHtml(r.Venue)}
-        ${norm(r.Festival) ? `<br><span class="badge" style="margin-top:6px">${escapeHtml(r.Festival)}</span>` : ''}
+        <div class="feature-top-line">
+          ${escapeHtml(displayDate(group.Date))}
+          ${ago ? `<span class="ago-badge">${escapeHtml(ago)}</span>` : ''}
+          ${festivalBadge}
+        </div>
+        <div class="feature-venue">${escapeHtml(group.Venue)}</div>
+        ${artistLines}
       </div>
     </div>
   `;
@@ -442,16 +607,23 @@ function upcomingFeatureCard(group) {
   const showDay = startOfDay(group._date);
   const daysAway = Math.round((showDay.getTime() - today.getTime()) / 86400000);
   const badge = countdownText(daysAway);
-  const artistLine = group.artists.map(a => escapeHtml(a)).join(', ');
+  const festivalBadge = norm(group.Festival)
+    ? `<span class="badge festival-inline">${escapeHtml(group.Festival)}</span>`
+    : '';
+  const artistLines = group.artists
+    .map(a => `<div class="feature-artist">${escapeHtml(a)}</div>`)
+    .join('');
 
   return `
     <div class="small feature-row upcoming-row">
       <div class="feature-text">
-        <strong>${artistLine}</strong>
-        <span class="countdown-badge">${escapeHtml(badge)}</span>
-        <br>
-        ${escapeHtml(displayDate(group.Date))} · ${escapeHtml(group.Venue)}
-        ${norm(group.Festival) ? `<br><span class="badge" style="margin-top:6px">${escapeHtml(group.Festival)}</span>` : ''}
+        <div class="feature-top-line">
+          ${escapeHtml(displayDate(group.Date))}
+          <span class="countdown-badge">${escapeHtml(badge)}</span>
+          ${festivalBadge}
+        </div>
+        <div class="feature-venue">${escapeHtml(group.Venue)}</div>
+        ${artistLines}
       </div>
     </div>
   `;
@@ -484,7 +656,8 @@ function getFeaturePages(items) {
 }
 
 function renderPagedFeature(el, items, key, emptyText) {
-  const pages = getFeaturePages(items);
+  const grouped = groupFeatureItems(items);
+  const pages = getFeaturePages(grouped);
   const pageIndex = featurePageState[key] || 0;
   const visible = pages[pageIndex] || [];
   const hasPrevious = pageIndex > 0;
@@ -533,7 +706,7 @@ function buildFeatures() {
 
   const upcomingMatches = rows
     .map(r => ({ ...r, _date: parseFlexibleDate(r.Date) }))
-    .filter(r => r._date && startOfDay(r._date).getTime() > today.getTime())
+    .filter(r => r._date && startOfDay(r._date).getTime() >= today.getTime())
     .sort((a, b) => a._date - b._date);
 
   renderPagedFeature(els.dayFeature, dayMatches, 'day', 'No shows on this date — yet. Go make a memory.');
@@ -745,19 +918,22 @@ function bindFeatureButtons() {
 }
 
 function bindDisclosureButtons() {
-  document.querySelectorAll('.card-toggle').forEach(btn => {
+  document.querySelectorAll('.ctrl-btn[aria-controls]').forEach(btn => {
     btn.onclick = e => {
       e.preventDefault();
       e.stopPropagation();
-
       const panel = document.getElementById(btn.getAttribute('aria-controls'));
       const open = btn.getAttribute('aria-expanded') === 'true';
-
       btn.setAttribute('aria-expanded', String(!open));
+      btn.style.transform = !open ? 'rotate(180deg)' : 'rotate(0deg)';
       if (panel) {
         panel.hidden = open;
         panel.classList.toggle('open', !open);
       }
+
+      // Show nth pill when expanding, hide when collapsing
+      const pill = btn.closest('.card-controls')?.querySelector('.nth-pill, .milestone-pill');
+      if (pill) pill.classList.toggle('visible', !open);
     };
   });
 }
@@ -824,25 +1000,41 @@ function attachEvents() {
   });
 
   document.addEventListener('click', e => {
-    const btn = e.target.closest('.card-toggle');
+    const btn = e.target.closest('.ctrl-btn[aria-controls]');
     if (!btn) return;
     e.preventDefault();
     e.stopPropagation();
-
     const panel = document.getElementById(btn.getAttribute('aria-controls'));
     const open = btn.getAttribute('aria-expanded') === 'true';
-
     btn.setAttribute('aria-expanded', String(!open));
+    btn.style.transform = !open ? 'rotate(180deg)' : 'rotate(0deg)';
     if (panel) {
       panel.hidden = open;
       panel.classList.toggle('open', !open);
     }
+
+    // Show nth pill when expanding, hide when collapsing
+    const pill = btn.closest('.card-controls')?.querySelector('.nth-pill, .milestone-pill');
+    if (pill) pill.classList.toggle('visible', !open);
   });
 }
 
 async function main() {
   const response = await fetch(CSV_PATH);
+  const lastModified = response.headers.get('Last-Modified');
   const text = await response.text();
+
+  // Set last synced timestamp
+  const syncEl = document.getElementById('lastSynced');
+  if (syncEl) {
+    const syncDate = lastModified ? new Date(lastModified) : new Date();
+    const formatted = syncDate.toLocaleDateString('en-US', {
+      month: 'long', day: 'numeric', year: 'numeric'
+    }) + ' at ' + syncDate.toLocaleTimeString('en-US', {
+      hour: 'numeric', minute: '2-digit', hour12: true
+    });
+    syncEl.textContent = `Last updated ${formatted}`;
+  }
 
   rows = Papa.parse(text, { header: true, skipEmptyLines: true }).data;
   rows = rows.filter(r => norm(r.Date) && norm(r.Artist) && lower(r.Type) !== 'broadway');
