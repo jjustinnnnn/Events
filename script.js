@@ -337,7 +337,10 @@ function artistTimelineHtml(artist) {
   const today = startOfToday();
 
   const items = allShows.map((show, i) => {
-    const isUpcoming = !isPastOrToday(show.Date);
+    const d = parseFlexibleDate(show.Date);
+    const showDay = d ? startOfDay(d).getTime() : null;
+    const isToday = showDay === today.getTime();
+    const isUpcoming = showDay !== null && showDay >= today.getTime();
     const isLast = i === allShows.length - 1;
     const setlistLink = norm(show.Setlist)
       ? ` · <a href="${escapeHtml(show.Setlist)}" target="_blank" rel="noreferrer">Setlist</a>`
@@ -347,8 +350,9 @@ function artistTimelineHtml(artist) {
       : '';
 
     let countdownTag = '';
-    if (isUpcoming) {
-      const d = parseFlexibleDate(show.Date);
+    if (isToday) {
+      countdownTag = `<span class="tl-countdown">Today</span>`;
+    } else if (isUpcoming) {
       const daysAway = d ? Math.round((startOfDay(d).getTime() - today.getTime()) / 86400000) : 0;
       countdownTag = `<span class="tl-countdown">${escapeHtml(countdownText(daysAway))}</span>`;
     }
@@ -365,9 +369,22 @@ function artistTimelineHtml(artist) {
 
   const seenCount = past.length;
   const upcomingCount = upcoming.length;
-  const headerText = seenCount === 0
-    ? `${upcomingCount} upcoming show${upcomingCount !== 1 ? 's' : ''}`
-    : `Seen ${seenCount} time${seenCount !== 1 ? 's' : ''}${upcomingCount > 0 ? ` · ${upcomingCount} upcoming` : ''}`;
+  const todayCount = upcoming.filter(r => {
+    const d = parseFlexibleDate(r.Date);
+    return d && startOfDay(d).getTime() === today.getTime();
+  }).length;
+
+  let headerText;
+  if (seenCount === 0) {
+    headerText = todayCount > 0
+      ? 'Show tonight'
+      : `${upcomingCount} upcoming show${upcomingCount !== 1 ? 's' : ''}`;
+  } else {
+    const suffix = todayCount > 0
+      ? ' · Show tonight'
+      : upcomingCount > 0 ? ` · ${upcomingCount} upcoming` : '';
+    headerText = `Seen ${seenCount} time${seenCount !== 1 ? 's' : ''}${suffix}`;
+  }
 
   return `
     <div class="tl-header">${headerText}</div>
