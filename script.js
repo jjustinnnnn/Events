@@ -351,7 +351,7 @@ function artistTimelineHtml(artist) {
 
     let countdownTag = '';
     if (isToday) {
-      countdownTag = `<span class="tl-countdown">Today</span>`;
+      countdownTag = `<span class="tl-countdown">TODAY</span>`;
     } else if (isUpcoming) {
       const daysAway = d ? Math.round((startOfDay(d).getTime() - today.getTime()) / 86400000) : 0;
       countdownTag = `<span class="tl-countdown">${escapeHtml(countdownText(daysAway))}</span>`;
@@ -377,11 +377,11 @@ function artistTimelineHtml(artist) {
   let headerText;
   if (seenCount === 0) {
     headerText = todayCount > 0
-      ? 'Show tonight'
+      ? 'Show today'
       : `${upcomingCount} upcoming show${upcomingCount !== 1 ? 's' : ''}`;
   } else {
     const suffix = todayCount > 0
-      ? ' · Show tonight'
+      ? ' · Show today'
       : upcomingCount > 0 ? ` · ${upcomingCount} upcoming` : '';
     headerText = `Seen ${seenCount} time${seenCount !== 1 ? 's' : ''}${suffix}`;
   }
