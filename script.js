@@ -598,13 +598,12 @@ function countdownText(daysAway) {
 }
 
 function groupUpcoming(items) {
-  // Group by date + venue so multi-artist shows appear as one row
   const groups = [];
   const seen = {};
   items.forEach(r => {
     const key = norm(r.Date) + '|' + norm(r.Venue);
     if (seen[key] !== undefined) {
-      groups[seen[key]].artists.push(norm(r.Artist));
+      groups[seen[key]].artistRows.push(r);
     } else {
       seen[key] = groups.length;
       groups.push({
@@ -612,7 +611,7 @@ function groupUpcoming(items) {
         Date: r.Date,
         Venue: r.Venue,
         Festival: r.Festival,
-        artists: [norm(r.Artist)]
+        artistRows: [r]
       });
     }
   });
@@ -627,9 +626,24 @@ function upcomingFeatureCard(group) {
   const festivalBadge = norm(group.Festival)
     ? `<span class="badge festival-inline">${escapeHtml(group.Festival)}</span>`
     : '';
-  const artistLines = group.artists
-    .map(a => `<div class="feature-artist">${escapeHtml(a)}</div>`)
-    .join('');
+
+  const artistLines = group.artistRows.map(r => {
+    const allShows = rows
+      .filter(x => norm(x.Artist) === norm(r.Artist))
+      .sort((a, b) => (parseFlexibleDate(a.Date)?.getTime() || 0) - (parseFlexibleDate(b.Date)?.getTime() || 0));
+    const pastCount = allShows.filter(x => {
+      const d = parseFlexibleDate(x.Date);
+      return d && startOfDay(d).getTime() < today.getTime();
+    }).length;
+    const showNum = pastCount + 1;
+    const showLabel = `show no. ${showNum}`;
+
+    return `
+      <div class="feature-artist-line" onclick="this.classList.toggle('revealed')">
+        <span class="feature-artist">${escapeHtml(norm(r.Artist))}</span>
+        <span class="upcoming-show-num">${escapeHtml(showLabel)}</span>
+      </div>`;
+  }).join('');
 
   return `
     <div class="small feature-row upcoming-row">
