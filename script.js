@@ -557,14 +557,20 @@ function groupFeatureItems(items) {
   return groups;
 }
 
+function formatArtistList(artists, isFestival) {
+  if (artists.length === 1) return escapeHtml(artists[0]);
+  if (isFestival) return artists.map(escapeHtml).join(', ');
+  if (artists.length === 2) return `${escapeHtml(artists[0])} and ${escapeHtml(artists[1])}`;
+  return artists.slice(0, -1).map(escapeHtml).join(', ') + ', and ' + escapeHtml(artists[artists.length - 1]);
+}
+
 function featureCard(group) {
   const ago = yearsAgoLabel(group.Date);
-  const festivalBadge = norm(group.Festival)
-    ? `<span class="badge festival-inline">${escapeHtml(group.Festival)}</span>`
+  const isFestival = !!norm(group.Festival);
+  const festivalBadge = isFestival
+    ? `<span class="ago-badge">${escapeHtml(group.Festival)}</span>`
     : '';
-  const artistLines = group.artists
-    .map(a => `<div class="feature-artist">${escapeHtml(a)}</div>`)
-    .join('');
+  const artistLine = formatArtistList(group.artists, isFestival);
 
   return `
     <div class="small feature-row">
@@ -574,8 +580,8 @@ function featureCard(group) {
           ${ago ? `<span class="ago-badge">${escapeHtml(ago)}</span>` : ''}
           ${festivalBadge}
         </div>
+        <div class="feature-artist-name">${artistLine}</div>
         <div class="feature-venue">${escapeHtml(group.Venue)}</div>
-        <div class="feature-artists">${artistLines}</div>
       </div>
     </div>
   `;
@@ -623,8 +629,9 @@ function upcomingFeatureCard(group) {
   const showDay = startOfDay(group._date);
   const daysAway = Math.round((showDay.getTime() - today.getTime()) / 86400000);
   const badge = countdownText(daysAway);
-  const festivalBadge = norm(group.Festival)
-    ? `<span class="badge festival-inline">${escapeHtml(group.Festival)}</span>`
+  const isFestival = !!norm(group.Festival);
+  const festivalBadge = isFestival
+    ? `<span class="ago-badge">${escapeHtml(group.Festival)}</span>`
     : '';
 
   const artistLines = group.artistRows.map(r => {
@@ -640,7 +647,7 @@ function upcomingFeatureCard(group) {
 
     return `
       <div class="feature-artist-line">
-        <span class="feature-artist">${escapeHtml(norm(r.Artist))}</span>
+        <span class="feature-artist-name">${escapeHtml(norm(r.Artist))}</span>
         <span class="upcoming-show-num">${escapeHtml(showLabel)}</span>
       </div>`;
   }).join('');
@@ -653,8 +660,8 @@ function upcomingFeatureCard(group) {
           <span class="countdown-badge">${escapeHtml(badge)}</span>
           ${festivalBadge}
         </div>
+        ${artistLines}
         <div class="feature-venue">${escapeHtml(group.Venue)}</div>
-        <div class="feature-artists">${artistLines}</div>
       </div>
     </div>
   `;
