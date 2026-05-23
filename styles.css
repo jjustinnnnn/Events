@@ -568,6 +568,73 @@ select {
   background: #f7f8ff;
 }
 
+.card-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ctrl-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--accent);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  box-sizing: border-box;
+  transition: background 0.15s, transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.ctrl-btn:hover {
+  background: var(--accent-soft);
+  filter: none;
+}
+
+.nth-slot {
+  display: flex;
+  justify-content: center;
+}
+
+.nth-pill {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  padding: 1px 8px;
+  display: none;
+  white-space: nowrap;
+}
+
+.nth-pill.visible {
+  display: inline-block;
+}
+
+.milestone-pill {
+  display: none;
+  font-size: 11px;
+  font-weight: 700;
+  color: #92400e;
+  background: #fef3c7;
+  border-radius: 999px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+
+.milestone-pill.visible {
+  display: inline-block;
+}
+
 .card-toggle .chev {
   transition: transform 0.2s ease;
   line-height: 1;
@@ -880,7 +947,7 @@ select {
     flex-direction: column;
   }
 
-  button:not(.sort-btn):not(.view-toggle-btn):not(.scrubber-reset-btn):not(.card-toggle):not(.see-more-btn):not(.search-clear-btn):not(.tab-btn) {
+  button:not(.sort-btn):not(.view-toggle-btn):not(.scrubber-reset-btn):not(.card-toggle):not(.see-more-btn):not(.search-clear-btn):not(.tab-btn):not(.ctrl-btn) {
     height: 48px;
   }
 
@@ -932,7 +999,7 @@ select {
     font-size: 16px;
   }
 
-  button:not(.sort-btn):not(.view-toggle-btn):not(.scrubber-reset-btn):not(.card-toggle):not(.see-more-btn):not(.search-clear-btn):not(.tab-btn) {
+  button:not(.sort-btn):not(.view-toggle-btn):not(.scrubber-reset-btn):not(.card-toggle):not(.see-more-btn):not(.search-clear-btn):not(.tab-btn):not(.ctrl-btn) {
     width: 100%;
     height: 48px;
   }
