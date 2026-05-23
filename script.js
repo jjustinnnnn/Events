@@ -639,7 +639,7 @@ function upcomingFeatureCard(group) {
     const showLabel = `show no. ${showNum}`;
 
     return `
-      <div class="feature-artist-line" onclick="this.classList.toggle('revealed')">
+      <div class="feature-artist-line">
         <span class="feature-artist">${escapeHtml(norm(r.Artist))}</span>
         <span class="upcoming-show-num">${escapeHtml(showLabel)}</span>
       </div>`;
@@ -1020,6 +1020,27 @@ function attachEvents() {
   els.search.addEventListener('input', () => {
     render();
     updateArtistMessage();
+  });
+
+  // Show/hide upcoming show number badge — tap on mobile, hover on desktop
+  // Using touchend to avoid the 300ms delay and double-fire with click
+  let touchMoved = false;
+  document.addEventListener('touchstart', () => { touchMoved = false; }, { passive: true });
+  document.addEventListener('touchmove', () => { touchMoved = true; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (touchMoved) return;
+    const line = e.target.closest('.feature-artist-line');
+    if (!line) return;
+    e.preventDefault();
+    line.classList.toggle('revealed');
+  });
+
+  // Desktop click fallback (non-touch devices)
+  document.addEventListener('click', e => {
+    if (e.sourceCapabilities?.firesTouchEvents) return;
+    const line = e.target.closest('.feature-artist-line');
+    if (!line) return;
+    line.classList.toggle('revealed');
   });
 
   document.addEventListener('click', e => {
