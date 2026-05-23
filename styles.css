@@ -324,12 +324,48 @@ button:hover {
   margin-top: 10px;
 }
 
+.feature-top-line {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.feature-venue {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.feature-artists {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.feature-artist {
+  font-size: 12px;
+  color: var(--muted);
+}
+
 .feature-artist-line {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 2px;
   cursor: pointer;
+}
+
+.feature-artist-line .feature-artist {
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .upcoming-show-num {
