@@ -227,15 +227,10 @@ button:hover {
 .artist-message {
   margin-top: 12px;
   min-height: 24px;
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.4;
-}
-
-.artist-message strong {
   color: var(--accent);
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 /* ── Tabs ── */
@@ -306,27 +301,6 @@ button:hover {
   gap: 0;
 }
 
-.feature-top-line {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 2px;
-}
-
-.feature-venue {
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 3px;
-}
-
-.feature-artist {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-}
-
 .feature-row {
   padding: 8px 0;
   border-bottom: 1px solid rgba(220,226,238,0.7);
@@ -340,6 +314,33 @@ button:hover {
   display: flex;
   gap: 10px;
   margin-top: 10px;
+}
+
+.feature-artist-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.upcoming-show-num {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 1px 8px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.feature-artist-line:hover .upcoming-show-num,
+.feature-artist-line.revealed .upcoming-show-num {
+  opacity: 1;
 }
 
 .see-more-btn {
@@ -548,18 +549,11 @@ select {
   line-height: 1.45;
 }
 
-.card-controls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.ctrl-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+.card-toggle {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
   border: 1px solid var(--line);
   background: #fff;
   color: var(--accent);
@@ -567,52 +561,22 @@ select {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  font-size: 16px;
+  box-shadow: none;
+}
+
+.card-toggle:hover {
+  background: #f7f8ff;
+}
+
+.card-toggle .chev {
+  transition: transform 0.2s ease;
   line-height: 1;
-  box-sizing: border-box;
-  transition: background 0.15s, transform 0.2s ease;
-  flex-shrink: 0;
-}
-
-.ctrl-btn:hover {
-  background: var(--accent-soft);
-  filter: none;
-}
-
-.nth-slot {
-  display: flex;
-  justify-content: center;
-}
-
-.nth-pill {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 18px;
   color: var(--accent);
-  background: var(--accent-soft);
-  border-radius: 999px;
-  padding: 1px 8px;
-  display: none;
-  white-space: nowrap;
 }
 
-.nth-pill.visible {
-  display: inline-block;
-}
-
-.milestone-pill {
-  display: none;
-  font-size: 11px;
-  font-weight: 700;
-  color: #92400e;
-  background: #fef3c7;
-  border-radius: 999px;
-  padding: 1px 8px;
-  white-space: nowrap;
-}
-
-.milestone-pill.visible {
-  display: inline-block;
+.card-toggle[aria-expanded="true"] .chev {
+  transform: rotate(180deg);
 }
 
 .details-panel[hidden] {
@@ -795,7 +759,7 @@ select {
 .tl-dot--upcoming {
   background: #fff;
   border-color: #f59e0b;
-  border-style: solid;
+  border-style: dashed;
 }
 
 .tl-item--upcoming .tl-date {
@@ -903,13 +867,6 @@ select {
   font-weight: 700;
 }
 
-.festival-inline {
-  margin-left: 4px;
-  vertical-align: middle;
-  font-size: 11px;
-  padding: 1px 8px;
-}
-
 @media (max-width: 860px) {
   .hero {
     grid-template-columns: 1fr;
@@ -923,7 +880,7 @@ select {
     flex-direction: column;
   }
 
-  button:not(.sort-btn):not(.view-toggle-btn):not(.scrubber-reset-btn):not(.card-toggle):not(.see-more-btn):not(.search-clear-btn):not(.tab-btn):not(.eye-btn):not(.ctrl-btn) {
+  button:not(.sort-btn):not(.view-toggle-btn):not(.scrubber-reset-btn):not(.card-toggle):not(.see-more-btn):not(.search-clear-btn):not(.tab-btn) {
     height: 48px;
   }
 
@@ -975,7 +932,7 @@ select {
     font-size: 16px;
   }
 
-  button:not(.sort-btn):not(.view-toggle-btn):not(.scrubber-reset-btn):not(.card-toggle):not(.see-more-btn):not(.search-clear-btn):not(.tab-btn):not(.eye-btn):not(.ctrl-btn) {
+  button:not(.sort-btn):not(.view-toggle-btn):not(.scrubber-reset-btn):not(.card-toggle):not(.see-more-btn):not(.search-clear-btn):not(.tab-btn) {
     width: 100%;
     height: 48px;
   }
@@ -1074,13 +1031,8 @@ select {
   }
 }
 
-.last-synced {
-  text-align: center;
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 24px;
-  opacity: 0.6;
-}
+.results-panel,
+.results,
 .card,
 .card-main {
   width: 100%;
