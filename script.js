@@ -575,7 +575,7 @@ function featureCard(group) {
           ${festivalBadge}
         </div>
         <div class="feature-venue">${escapeHtml(group.Venue)}</div>
-        ${artistLines}
+        <div class="feature-artists">${artistLines}</div>
       </div>
     </div>
   `;
@@ -654,7 +654,7 @@ function upcomingFeatureCard(group) {
           ${festivalBadge}
         </div>
         <div class="feature-venue">${escapeHtml(group.Venue)}</div>
-        ${artistLines}
+        <div class="feature-artists">${artistLines}</div>
       </div>
     </div>
   `;
