@@ -1025,6 +1025,9 @@ function attachEvents() {
   });
 
   els.search.addEventListener('input', () => {
+    if (scrubberYear !== null && els.search.value) {
+      selectScrubberYear(null);
+    }
     render();
     updateArtistMessage();
   });
