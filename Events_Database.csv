@@ -65,7 +65,7 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 08/26/2025,Broadway - Just In Time,Circle In The Square,,,,Broadway
 08/23/2025,Lady Gaga,Madison Square Garden,,,,Concert
 08/08/2025,"John Mulaney, Mike Birbiglia, Fred Armestein",Bethel Woods,,,,Comedy
-07/30/2025,The Head And The Heart,Central Park Summer Stage,,,,Concert
+07/30/2025,The Head And The Heart,SummerStage in Central Park,,,,Concert
 07/29/2025,Linkin Park,Barclays Center,,,,Concert
 07/23/2025,Vengaboys,Madison Square Garden,,,,Concert
 07/23/2025,Scissor Sisters,Madison Square Garden,,,,Concert
@@ -144,8 +144,8 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 07/16/2024,Noah Kahan,Madison Square Garden,,,,Concert
 07/10/2024,Tegan and Sara,Red Rocks Amphitheater,,,,Concert
 07/10/2024,Portugal. The Man,Red Rocks Amphitheater,,,,Concert
-07/01/2024,LA LOM,Central Park Summerstage,,,,Concert
-07/01/2024,Madison Cunningham,Central Park Summerstage,,,,Concert
+07/01/2024,LA LOM,SummerStage in Central Park,,,,Concert
+07/01/2024,Madison Cunningham,SummerStage in Central Park,,,,Concert
 06/12/2024,Allie X,Racket,,,,Concert
 06/08/2024,Comedy - Mike Birbiglia,Beacon Theatre,,,,Concert
 06/06/2024,Broadway - Home,Todd Haimes Theatre,,,,Broadway
@@ -158,7 +158,7 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 04/09/2024,Morgana,Music Hall of Williamsburg,,,,Concert
 04/06/2024,The Breeders,Madison Square Garden,,,,Concert
 04/06/2024,Olivia Rodrigo,Madison Square Garden,,,,Concert
-01/19/2024,Samara Joy,Blue Note Jazz Club,,,,Concert
+01/19/2024,Samara Joy,Blue Note,,,,Concert
 01/18/2024,Green Day,Irving Plaza,,,,Concert
 12/31/2023,Heart,Climate Pledge Arena,,,,Concert
 12/01/2023,DURRY,Racket,,,,Concert
@@ -167,10 +167,10 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 11/11/2023,Slothrust,Terminal 5,,,,Concert
 11/11/2023,Durry,Bowery Ballroom,,,,Concert
 10/17/2023,Yonaka,Irving Plaza,,,,Concert
-10/06/2023,D4VD,Barclay’s Center,,,,Concert
-10/06/2023,SZA,Barclay’s Center,,,,Concert
+10/06/2023,D4VD,Barclay's Center,,,,Concert
+10/06/2023,SZA,Barclay's Center,,,,Concert
 10/03/2023,RAYE,Terminal 5,,,,Concert
-09/29/2023,CMAT,Baby’s All Right,,,,Concert
+09/29/2023,CMAT,Baby's All Right,,,,Concert
 09/26/2023,Janelle Monae,Radio City Music Hall,,,,Concert
 09/19/2023,Death Cab For Cutie,Madison Square Garden,,,,Concert
 09/19/2023,The Postal Service,Madison Square Garden,,,,Concert
@@ -192,9 +192,9 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 11/08/2022,Samara Joy,Blue Note,,,,Concert
 10/29/2022,Tegan and Sara,Pier 17,,,,Concert
 10/21/2022,Tegan and Sara,Rough Trade,,,,Concert
-10/18/2022,Royal And The Serpent,Beacon Theater,,,,Concert
-10/18/2022,Demi Lovato,Beacon Theater,,,,Concert
-10/16/2022,Muse,Beacon Theater,,,,Concert
+10/18/2022,Royal And The Serpent,Beacon Theatre,,,,Concert
+10/18/2022,Demi Lovato,Beacon Theatre,,,,Concert
+10/16/2022,Muse,Beacon Theatre,,,,Concert
 08/23/2022,The Shins,Radio City Music Hall,,,,Concert
 08/17/2022,The Strokes,MetLife Stadium,,,,Concert
 08/17/2022,Red Hot Chili Peppers,MetLife Stadium,,,,Concert
@@ -224,9 +224,9 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 02/17/2022,G Flip,Irving Plaza,,,,Concert
 02/11/2022,I Dont Know How but They Found Me,Irving Plaza,,,,Concert
 01/12/2022,Stephan Moccio,Monet’s Immersive Experience,,,,Concert
-12/07/2021,Sad Night Dynamite,Baby’s Alright,,,,Concert
+12/07/2021,Sad Night Dynamite,Baby's All Right,,,,Concert
 12/04/2021,The New Pornographers,Webster Hall,,,,Concert
-12/02/2021,Ricky Montgomery,Gramercy Theater,,,,Concert
+12/02/2021,Ricky Montgomery,Gramercy Theatre,,,,Concert
 11/14/2021,Upsahl,Webster Hall,,,,Concert
 10/28/2021,SG Goodman,Le Poisson Rouge,,,,Concert
 10/28/2021,Madison Cunningham,Le Poisson Rouge,,,,Concert
@@ -265,7 +265,7 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 01/03/2020,Television Skies,Arlene’s Grocery,Paul's band,,,Concert
 12/24/2019,Broadway - A Christmas Carol,Lyceum Theatre,,,,Broadway
 12/12/2019,The Raconteurs,The Republik,Hawaii show,,,Concert
-12/07/2019,She & Him,Kings Theater,,,,Concert
+12/07/2019,She & Him,Kings Theatre,,,,Concert
 12/06/2019,Mumford & Sons,ALT 92.3 Not So Silent Night,Barclays Center,,,Concert
 12/06/2019,Vampire Weekend,ALT 92.3 Not So Silent Night,Barclays Center,,,Concert
 12/06/2019,Cage The Elephant,ALT 92.3 Not So Silent Night,Barclays Center,,,Concert
@@ -291,7 +291,7 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 09/28/2019,Spencer Ludwig,Hudson Yards,,,,Concert
 09/25/2019,Janelle Monae,Pier 17,,,,Concert
 09/24/2019,Tegan and Sara,Murmrr Theatre,,,,Concert
-09/20/2019,Blink-182,Barclays,,,,Concert
+09/20/2019,Blink-182,Barclays Center,,,,Concert
 09/18/2019,PVRIS,Music Hall Of Williasmburg,,,,Concert
 09/18/2019,Tove Lo,Bowery Ballroom,,,,Concert
 09/12/2019,Illuminati Hotties,Terminal 5,,,,Concert
@@ -389,7 +389,7 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 10/08/2018,CYN,Terminal 5,,,,Concert
 10/08/2018,Years & Years,Terminal 5,,,,Concert
 10/06/2018,The Neighbourhood,Terminal 5,,,,Concert
-10/04/2018,Tove Stryke,Le Poseidon Rouge,,,,Concert
+10/04/2018,Tove Stryke,Le Poisson Rouge,,,,Concert
 09/29/2018,Alex Winston,Knockdown Center,,,,Concert
 09/29/2018,Broods,Knockdown Center,,,,Concert
 09/29/2018,Marina And The Diamonds,Knockdown Center,,,,Concert
@@ -410,7 +410,7 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 07/09/2018,Phoenix,Brooklyn Steel,,,,Concert
 06/27/2018,Foster the People,Barclay's Center,,,,Concert
 06/27/2018,Paramore,Barclay's Center,,,,Concert
-06/25/2018,The Naked and Famous,Le Possion Rouge,,,,Concert
+06/25/2018,The Naked and Famous,Le Poisson Rouge,,,,Concert
 06/23/2018,Tove Lo,Pier 57,Pride 2018,,,Concert
 06/18/2018,Andrea Bocelli,Capitol Studios,Album Event,,,Concert
 06/16/2018,Alex Lahey,The Woodlands of Dover International Speedway,,,Firefly,Concert
@@ -450,7 +450,7 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 05/06/2018,Haim,Radio City Music Hall,,,,Concert
 05/06/2018,Lizzo,Radio City Music Hall,,,,Concert
 05/02/2018,Middle Kids,Public Arts,Spotify Fan First Secret Show,,,Concert
-04/30/2018,Brian Newman,Le Possion Rouge,Verve Records Showcase,,,Concert
+04/30/2018,Brian Newman,Le Poisson Rouge,Verve Records Showcase,,,Concert
 04/30/2018,Elena,Le Possion Rouge,Verve Records Showcase,,,Concert
 04/30/2018,Jon Batiste,Le Possion Rouge,Verve Records Showcase,,,Concert
 04/30/2018,Tank and the Bangas,Le Possion Rouge,Verve Records Showcase,,,Concert
@@ -476,7 +476,7 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 02/26/2018,LIGHTS,Irving Plaza,,,,Concert
 02/20/2018,Portugal. The Man,Brooklyn Steel,,,,Concert
 02/20/2018,Topaz Jones,Brooklyn Steel,,,,Concert
-02/16/2018,Absofacto,Music Hall of Williamsberg,,,,Concert
+02/16/2018,Absofacto,Music Hall of Williamsburg,,,,Concert
 02/15/2018,BORNS,Brooklyn Steel,,,,Concert
 02/13/2018,First Aid Kit,Beacon Theatre,,,,Concert
 02/09/2018,COIN,Irving Plaza,,,,Concert
@@ -495,7 +495,7 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 11/28/2017,Kirk Franklin,Kings Theatre,Ledisi & Kirk Franklin & The Saint Tour,,,Concert
 11/28/2017,Ledisi,Kings Theatre,Ledisi & Kirk Franklin & The Saint Tour,,,Concert
 11/18/2017,Angus & Julia Stone,Public Arts,,,,Concert
-11/16/2017,Alex Lahey,Music Hall Of Williamsburg,,,,Concert
+11/16/2017,Alex Lahey,Music Hall of Williamsburg,,,,Concert
 11/09/2017,LIGHTS,Samsung,,,,Concert
 11/08/2017,Tegan And Sara,Kings Theatre,The Con X Tour,,,Concert
 11/07/2017,Tori Amos,Beacon Theatre,M&G,,,Concert
@@ -524,13 +524,13 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 09/14/2017,Milky Chance,Citi Field,,,Meadows,Concert
 09/14/2017,Tegan And Sara,Citi Field,,,Meadows,Concert
 09/14/2017,Two Door Cinema Club,Citi Field,,,Meadows,Concert
-09/13/2017,Cold War Kids,Summerstage,Opening for: Young The Giant,,,Concert
-09/13/2017,Young The Giant,Summerstage,Opener: Cold War Kids,,,Concert
+09/13/2017,Cold War Kids,SummerStage in Central Park,Opening for: Young The Giant,,,Concert
+09/13/2017,Young The Giant,SummerStage in Central Park,Opener: Cold War Kids,,,Concert
 09/12/2017,Arcade Fire,Madison Square Garden,,,,Concert
 09/10/2017,Arcade Fire,The Grand Soho Hotel,"KANE Benefit - Win & Regine acoustic with Preservation Hall Jazz Band / Haiti, Everything Now (with pres), We Don't Deserve Love",,,Concert
 09/07/2017,Dan Croll,Brooklyn Bazaar (greenpoint),,,,Concert
 08/17/2017,TORRES,Dr. Martins,,,,Concert
-08/12/2017,They Might Be Giants,SummerStage,,,,Concert
+08/12/2017,They Might Be Giants,SummerStage in Central Park,,,,Concert
 08/08/2017,Michelle Branch,Webster Hall,Last show (I attended) at Old Webster Hall,,,Concert
 08/03/2017,Baio,Seaport Summer 17,Seaport Foodlab,,,Concert
 08/02/2017,Fleet Foxes,Prospect Park Bandshell,BRIC Celebrate Brooklyn!,,,Concert
@@ -538,7 +538,7 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 07/30/2017,Fleetwood Mac,Citi Field,Classic East,,,Concert
 07/30/2017,Glass Animals,Randall's Island Park,,,Panorama,Concert
 07/29/2017,Alt-J,Randall's Island Park,,,Panorama,Concert
-07/27/2017,Regina Spektor,SummerStage,,,,Concert
+07/27/2017,Regina Spektor,SummerStage in Central Park,,,,Concert
 07/15/2017,The Naked and Famous,Pier 36,Tour de Fat New York,,,Concert
 07/11/2017,New Politics,Hammerstein Ballroom,,,,Concert
 06/24/2017,Tegan and Sara,Pier 26,Pride Island,,,Concert
@@ -617,7 +617,7 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 10/15/2015,Smallpools,Webster Hall,Neon Gold CMJ Showcase,,,Concert
 10/14/2015,Secret Weapons,The Marlin Room at Webster Hall,Black Panda PR Official CMJ Showcase,,,Concert
 10/02/2015,COIN,Mercury Lounge,,,,Concert
-09/17/2015,Stevie Wonder,Central Park SummerStage,,https://www.setlist.fm/setlist/stevie-wonder/2015/central-park-summerstage-new-york-ny-4bf7e782.html,,Concert
+09/17/2015,Stevie Wonder,SummerStage in Central Park,,https://www.setlist.fm/setlist/stevie-wonder/2015/central-park-summerstage-new-york-ny-4bf7e782.html,,Concert
 08/04/2015,Edward Sharpe and the Magnetic Zeros,Prospect Park Bandshell,Listened from outside,,,Concert
 07/28/2015,Titus Andronicus,Shea Stadium,The Most Lamentable Tragedy Release,,,Concert
 05/11/2015,Passion Pit,Kings Theatre,,,,Concert
@@ -666,13 +666,13 @@ Date,Artist,Venue,Note,Setlist,Festival,Type
 06/06/2014,OutKast,Randall’s Island Park,,,Governors Ball,Concert
 06/06/2014,Phoenix,Randall’s Island Park,,,Governors Ball,Concert
 06/06/2014,Run The Jewels,Randall’s Island Park,,,Governors Ball,Concert
-05/20/2014,The Neighbourhood,Rumsey Playfield,Summerstage,,,Concert
+05/20/2014,The Neighbourhood,SummerStage in Central Park,Summerstage,,,Concert
 05/03/2014,Against Me!,Webster Hall,Laura Jane Grace,,,Concert
 04/30/2014,Matrimony,Mercury Lounge,,,,Concert
-04/04/2014,Cherub,The Gramercy Theatre,,,,Concert
+04/04/2014,Cherub,Gramercy Theatre,,,,Concert
 03/20/2014,Magic Man,Mercury Lounge,,,,Concert
 03/12/2014,Juicy J,Irving Plaza,,,,Concert
-03/05/2014,The Lawrence Arms,The Gramercy Theatre,,,,Concert
+03/05/2014,The Lawrence Arms,Gramercy Theatre,,,,Concert
 02/27/2014,Misterwives,Westway,,,,Concert
 01/30/2014,Magic Man,Bowery Ballroom,,,,Concert
 01/19/2014,Bomb The Music Industry!,Warsaw,,,,Concert
