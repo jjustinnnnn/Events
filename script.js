@@ -9,11 +9,6 @@ const els = {
   weekFeature: document.getElementById('weekFeature'),
   upcomingFeature: document.getElementById('upcomingFeature'),
   artistMessage: document.getElementById('artistMessage'),
-  carouselTrack: null,
-  carouselViewport: null,
-  carouselDots: null,
-  carouselPrev: null,
-  carouselNext: null,
   topArtistsList: document.getElementById('topArtistsList'),
   topVenuesList: document.getElementById('topVenuesList'),
   highlightsPanel: document.getElementById('highlightsPanel'),
@@ -96,18 +91,6 @@ const displayDate = v => {
     year: 'numeric'
   });
 };
-
-function uniqueSorted(values) {
-  return [...new Set(values.filter(Boolean))].sort((a, b) =>
-    a.localeCompare(b, undefined, { numeric: true })
-  );
-}
-
-function fillSelect(select, values, label) {
-  select.innerHTML =
-    `<option value="all">All ${label}</option>` +
-    values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
-}
 
 function escapeHtml(str) {
   return norm(str)
@@ -504,6 +487,13 @@ function updateArtistMessage() {
     const lastDate = parseFlexibleDate(last.Date);
     const fmt = d => d ? d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '';
 
+    // Seen once: first and last are the same show, so just state it
+    if (count === 1) {
+      els.artistMessage.innerHTML =
+        `<strong>You've seen ${escapeHtml(last.Artist)} 1 time</strong> at ${escapeHtml(last.Venue)} on ${escapeHtml(displayDate(last.Date))}`;
+      return;
+    }
+
     els.artistMessage.innerHTML =
       `<strong>You've seen ${escapeHtml(last.Artist)} ${count} time${count !== 1 ? 's' : ''}</strong> · last time at ${escapeHtml(last.Venue)}, ${fmt(lastDate)} · first time at ${escapeHtml(first.Venue)}, ${fmt(firstDate)}`;
     return;
@@ -753,17 +743,13 @@ function buildFeatures() {
   }
 }
 
-function initFilters() {
-  fillSelect(els.year, uniqueSorted(rows.map(yearOf)), 'Years');
-}
-
 function drawTimeline() {
   const canvas = els.timelineCanvas;
   if (!canvas) return;
   const dpr = window.devicePixelRatio || 1;
   const cssWidth = canvas.offsetWidth;
   if (!cssWidth) return; // panel hidden — redrawn when Memories is shown
-  const cssHeight = 80;
+  const cssHeight = 96;
   canvas.width = cssWidth * dpr;
   canvas.height = cssHeight * dpr;
   canvas.style.height = cssHeight + 'px';
@@ -773,41 +759,59 @@ function drawTimeline() {
 
   const years = Object.keys(timelineData).map(Number).sort((a, b) => a - b);
   if (!years.length) return;
-  const max = Math.max(...years.map(y => timelineData[y]));
+  const counts = years.map(y => timelineData[y]);
+  const max = Math.max(...counts);
+  const peakIdx = counts.indexOf(max);
   const n = years.length;
+
+  const topPad = 16;      // headroom for count labels
   const barAreaH = 56;
-  const labelH = 14;
+  const baseY = topPad + barAreaH;
   const gap = 3;
   const barW = Math.max(2, (cssWidth - (n - 1) * gap) / n);
   const radius = Math.min(barW / 2, 3);
+  const cx = i => i * (barW + gap) + barW / 2;
 
-  // Bars
+  // Bars — the peak year is drawn at full strength
   ctx.fillStyle = '#4353ff';
-  ctx.globalAlpha = 0.3;
   years.forEach((yr, i) => {
-    const x = i * (barW + gap);
-    const barH = Math.max(3, Math.round((timelineData[yr] / max) * barAreaH));
+    const barH = Math.max(3, Math.round((counts[i] / max) * barAreaH));
+    ctx.globalAlpha = i === peakIdx ? 1 : 0.3;
     ctx.beginPath();
-    ctx.roundRect(x, barAreaH - barH, barW, barH, radius);
+    ctx.roundRect(i * (barW + gap), baseY - barH, barW, barH, radius);
     ctx.fill();
   });
   ctx.globalAlpha = 1;
-
-  // Labels: first, last, and every 3rd year — skipped if they would overlap
   ctx.textAlign = 'center';
-  ctx.font = '10px system-ui';
-  ctx.fillStyle = '#667085';
-  const minGap = 4;
-  let lastRight = -Infinity;
+
+  // Draws a label unless it would collide with one already drawn
+  const drawn = [];
+  const fits = (x, w, pad) => drawn.every(d => x - w / 2 > d.right + pad || x + w / 2 < d.left - pad);
+  const place = (text, x, y, font, color, pad) => {
+    ctx.font = font;
+    const w = ctx.measureText(text).width;
+    if (!fits(x, w, pad)) return;
+    ctx.fillStyle = color;
+    ctx.fillText(text, x, y);
+    drawn.push({ left: x - w / 2, right: x + w / 2 });
+  };
+
+  // Count labels (above bars): peak first, then any others that fit
+  const countY = i => baseY - Math.max(3, Math.round((counts[i] / max) * barAreaH)) - 4;
+  place(String(counts[peakIdx]), cx(peakIdx), countY(peakIdx), 'bold 10px system-ui', '#4353ff', 2);
+  counts.forEach((c, i) => {
+    if (i === peakIdx) return;
+    place(String(c), cx(i), countY(i), '10px system-ui', '#667085', 2);
+  });
+
+  // Year labels (below bars): peak year first, then first / last / every 3rd
+  drawn.length = 0;
+  const yearY = baseY + 14;
+  place(String(years[peakIdx]), cx(peakIdx), yearY, 'bold 10px system-ui', '#4353ff', 4);
   years.forEach((yr, i) => {
+    if (i === peakIdx) return;
     if (!(i === 0 || i === n - 1 || yr % 3 === 0)) return;
-    const cx = i * (barW + gap) + barW / 2;
-    const text = String(yr);
-    const half = ctx.measureText(text).width / 2;
-    if (cx - half > lastRight + minGap) {
-      ctx.fillText(text, cx, barAreaH + labelH);
-      lastRight = cx + half;
-    }
+    place(String(yr), cx(i), yearY, '10px system-ui', '#667085', 4);
   });
 }
 
