@@ -21,15 +21,12 @@ const els = {
   toggleHighlights: document.getElementById('toggleHighlights'),
   toggleEvents: document.getElementById('toggleEvents'),
   toggleTrack: document.getElementById('toggleTrack'),
-  scrubberCanvas: document.getElementById('scrubberCanvas'),
-  scrubberLabel: document.getElementById('scrubberLabel'),
-  scrubberReset: document.getElementById('scrubberReset')
+  timelineCanvas: document.getElementById('timelineCanvas')
 };
 
 let rows = [];
 let sortOrder = 'newest';
-let scrubberYear = null;
-let scrubberData = {}; // { year: count }
+let timelineData = {}; // { year: count }
 let featurePageState = {
   day: 0,
   week: 0,
@@ -126,7 +123,6 @@ function getFiltered() {
 
   return rows.filter(r => {
     if (!isPastOrToday(r.Date)) return false;
-    if (scrubberYear && yearOf(r) !== String(scrubberYear)) return false;
     if (!q) return true;
 
     const blob = [
@@ -480,9 +476,8 @@ function render() {
       }).join('')
     : '<div class="empty">No events matched your search.</div>';
 
-  const isFiltered = query || scrubberYear;
-  els.resultsCount.textContent = isFiltered ? `${filtered.length} found` : '';
-  els.resultsHeading.textContent = scrubberYear ? String(scrubberYear) : query ? 'Filtered events' : 'All events';
+  els.resultsCount.textContent = query ? `${filtered.length} found` : '';
+  els.resultsHeading.textContent = query ? 'Filtered events' : 'All events';
   bindDisclosureButtons();
 }
 
@@ -762,12 +757,12 @@ function initFilters() {
   fillSelect(els.year, uniqueSorted(rows.map(yearOf)), 'Years');
 }
 
-function drawScrubber() {
-  const canvas = els.scrubberCanvas;
+function drawTimeline() {
+  const canvas = els.timelineCanvas;
   if (!canvas) return;
   const dpr = window.devicePixelRatio || 1;
   const cssWidth = canvas.offsetWidth;
-  if (!cssWidth) return;
+  if (!cssWidth) return; // panel hidden — redrawn when Memories is shown
   const cssHeight = 80;
   canvas.width = cssWidth * dpr;
   canvas.height = cssHeight * dpr;
@@ -776,122 +771,54 @@ function drawScrubber() {
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
 
-  const years = Object.keys(scrubberData).map(Number).sort((a, b) => a - b);
-  const counts = years.map(y => scrubberData[y]);
-  const max = Math.max(...counts);
+  const years = Object.keys(timelineData).map(Number).sort((a, b) => a - b);
+  if (!years.length) return;
+  const max = Math.max(...years.map(y => timelineData[y]));
   const n = years.length;
   const barAreaH = 56;
   const labelH = 14;
   const gap = 3;
-  const totalGaps = (n - 1) * gap;
-  const barW = Math.max(2, (cssWidth - totalGaps) / n);
+  const barW = Math.max(2, (cssWidth - (n - 1) * gap) / n);
   const radius = Math.min(barW / 2, 3);
 
-  const accent      = '#4353ff';
-  const labelColor  = '#667085';
-  const labelActive = '#4353ff';
-
+  // Bars
+  ctx.fillStyle = '#4353ff';
+  ctx.globalAlpha = 0.3;
   years.forEach((yr, i) => {
     const x = i * (barW + gap);
-    const barH = Math.max(3, Math.round((scrubberData[yr] / max) * barAreaH));
-    const y = barAreaH - barH;
-    const isActive = scrubberYear === yr;
-    const isDimmed = scrubberYear !== null && !isActive;
-
-    // Draw only the proportional fill bar — no background track
-    ctx.fillStyle = accent;
-    ctx.globalAlpha = isActive ? 1 : isDimmed ? 0.12 : 0.3;
+    const barH = Math.max(3, Math.round((timelineData[yr] / max) * barAreaH));
     ctx.beginPath();
-    ctx.roundRect(x, y, barW, barH, radius);
+    ctx.roundRect(x, barAreaH - barH, barW, barH, radius);
     ctx.fill();
-    ctx.globalAlpha = 1;
   });
+  ctx.globalAlpha = 1;
 
-  // Labels
+  // Labels: first, last, and every 3rd year — skipped if they would overlap
   ctx.textAlign = 'center';
+  ctx.font = '10px system-ui';
+  ctx.fillStyle = '#667085';
   const minGap = 4;
-  let lastLabelRight = -Infinity;
-  const labelFont     = '10px system-ui';
-  const labelFontBold = 'bold 10px system-ui';
-
-  if (scrubberYear !== null) {
-    const i = years.indexOf(scrubberYear);
-    if (i !== -1) {
-      const x = i * (barW + gap) + barW / 2;
-      ctx.font = labelFontBold;
-      ctx.fillStyle = labelActive;
-      ctx.fillText(String(scrubberYear), x, barAreaH + labelH);
+  let lastRight = -Infinity;
+  years.forEach((yr, i) => {
+    if (!(i === 0 || i === n - 1 || yr % 3 === 0)) return;
+    const cx = i * (barW + gap) + barW / 2;
+    const text = String(yr);
+    const half = ctx.measureText(text).width / 2;
+    if (cx - half > lastRight + minGap) {
+      ctx.fillText(text, cx, barAreaH + labelH);
+      lastRight = cx + half;
     }
-  } else {
-    const candidates = years.filter((yr, i) =>
-      i === 0 || i === n - 1 || yr % 3 === 0
-    );
-    ctx.font = labelFont;
-    ctx.fillStyle = labelColor;
-    candidates.forEach(yr => {
-      const i = years.indexOf(yr);
-      const cx = i * (barW + gap) + barW / 2;
-      const text = String(yr);
-      const textW = ctx.measureText(text).width;
-      const left  = cx - textW / 2;
-      const right = cx + textW / 2;
-      if (left > lastLabelRight + minGap) {
-        ctx.fillText(text, cx, barAreaH + labelH);
-        lastLabelRight = right;
-      }
-    });
-  }
+  });
 }
 
-function yearFromClick(clientX) {
-  const canvas = els.scrubberCanvas;
-  if (!canvas) return null;
-  const rect = canvas.getBoundingClientRect();
-  const x = clientX - rect.left;
-  const years = Object.keys(scrubberData).map(Number).sort((a, b) => a - b);
-  const n = years.length;
-  const gap = 2;
-  const totalGaps = (n - 1) * gap;
-  const barW = (rect.width - totalGaps) / n;
-  const i = Math.floor(x / (barW + gap));
-  return years[Math.max(0, Math.min(i, n - 1))] ?? null;
-}
-
-function selectScrubberYear(yr) {
-  scrubberYear = yr;
-  if (els.scrubberLabel) els.scrubberLabel.textContent = yr ? String(yr) : 'All years';
-  if (els.scrubberReset) els.scrubberReset.hidden = yr === null;
-  drawScrubber();
-  render();
-  updateArtistMessage();
-}
-
-function buildScrubber() {
-  const past = rows.filter(r => isPastOrToday(r.Date));
-  scrubberData = {};
-  past.forEach(r => {
+function buildTimeline() {
+  timelineData = {};
+  rows.filter(r => isPastOrToday(r.Date)).forEach(r => {
     const y = yearOf(r);
-    if (y) scrubberData[y] = (scrubberData[y] || 0) + 1;
+    if (y) timelineData[y] = (timelineData[y] || 0) + 1;
   });
-
-  const canvas = els.scrubberCanvas;
-  if (!canvas) return;
-
-  window.addEventListener('resize', drawScrubber);
-
-  canvas.addEventListener('click', e => {
-    const yr = yearFromClick(e.clientX);
-    if (yr !== null) selectScrubberYear(scrubberYear === yr ? null : yr);
-  });
-
-  canvas.addEventListener('touchend', e => {
-    e.preventDefault();
-    const touch = e.changedTouches[0];
-    const yr = yearFromClick(touch.clientX);
-    if (yr !== null) selectScrubberYear(scrubberYear === yr ? null : yr);
-  }, { passive: false });
-
-  els.scrubberReset?.addEventListener('click', () => selectScrubberYear(null));
+  window.addEventListener('resize', drawTimeline);
+  requestAnimationFrame(drawTimeline);
 }
 
 function buildStats() {
@@ -1000,10 +927,12 @@ function setView(view) {
   els.eventsPanel.style.display = showHighlights ? 'none' : '';
   const statsPanel = document.getElementById('statsPanel');
   if (statsPanel) statsPanel.style.display = showHighlights ? '' : 'none';
+  const timelinePanel = document.getElementById('timelinePanel');
+  if (timelinePanel) timelinePanel.style.display = showHighlights ? '' : 'none';
   els.toggleHighlights.classList.toggle('active', showHighlights);
   els.toggleEvents.classList.toggle('active', !showHighlights);
   els.toggleTrack?.classList.toggle('right', !showHighlights);
-  if (!showHighlights) requestAnimationFrame(drawScrubber);
+  if (showHighlights) requestAnimationFrame(drawTimeline);
 }
 
 function buildToggle() {
@@ -1025,9 +954,6 @@ function attachEvents() {
   });
 
   els.search.addEventListener('input', () => {
-    if (scrubberYear !== null && els.search.value) {
-      selectScrubberYear(null);
-    }
     render();
     updateArtistMessage();
   });
@@ -1171,7 +1097,7 @@ async function main() {
     });
   }
 
-  buildScrubber();
+  buildTimeline();
   buildStats();
   buildFeatures();
   buildTabs();
